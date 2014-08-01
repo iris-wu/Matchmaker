@@ -41,7 +41,7 @@ MainWindow::MainWindow()
     QMenu* fileMenu = menuBar()->addMenu(tr("&File"));
 
     //actions
-    QAction* loadMeshFile = new QAction(tr("Load Mesh File"), this);
+    QAction* loadMeshFile = new QAction(tr("Load Mesh File Test"), this);
     QAction* loadTextureFile = new QAction(tr("Load Texture File"), this);
 
     fileMenu->addAction(loadMeshFile);
