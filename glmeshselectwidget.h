@@ -2,6 +2,7 @@
 #define GLMESHSELECTWIDGET_H
 
 #include <QGLWidget>
+#include <QTextStream>
 
 class glMeshSelectWidget: public QGLWidget
 
@@ -23,6 +24,9 @@ class glMeshSelectWidget: public QGLWidget
 public:
     glMeshSelectWidget();
     ~glMeshSelectWidget();
+
+    //is called when a the user wants to load a different mesh file
+    void loadMeshFileCallback(QTextStream* fileStream);
 
 protected:
     void initializeGL(); //called once before drawing happens

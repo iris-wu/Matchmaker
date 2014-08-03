@@ -51,3 +51,14 @@ void glMeshSelectWidget::mousePressEvent(QMouseEvent *event)
 {
 
 }
+
+void glMeshSelectWidget::loadMeshFileCallback(QTextStream* fileStream)
+{
+    while(!fileStream->atEnd())
+    {
+        QString currentLine = fileStream->readLine();
+        QStringList values = currentLine.split(" ");
+
+        //do your magic :)
+    }
+}
