@@ -7,8 +7,8 @@
 #include "gltextureselectwidget.h"
 
 #define WINDOW_TITLE "Matchmaker"
-#define WINDOW_SIZE_WIDTH 800
-#define WINDOW_SIZE_HEIGHT 600
+#define WINDOW_SIZE_WIDTH 1000
+#define WINDOW_SIZE_HEIGHT 500
 
 class MainWindow : public QMainWindow
 {

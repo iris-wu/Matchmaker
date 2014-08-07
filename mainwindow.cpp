@@ -80,10 +80,24 @@ void MainWindow::SLOT_loadMeshFile()
        glMeshWidget->loadMeshFileCallback(fileStream);
 
        //all done
+       delete fileStream;
        file.close();
     }
 }
 
 void MainWindow::SLOT_loadTextureFile()
 {
+
+    QFileDialog dialog(this);
+    dialog.setDirectory(QCoreApplication::applicationDirPath());
+    dialog.setFileMode(QFileDialog::ExistingFile);
+    dialog.setNameFilter(tr("Images (*.png *.xpm *.jpg)"));
+    if(dialog.exec())
+    {
+       //get selected file name
+       QString fileName = dialog.selectedFiles()[0];
+
+       //call widget handle read
+       glTextureWidget->loadTextureFromFile(fileName);
+    }
 }

@@ -68,7 +68,7 @@ void glTextureSelectWidget::initializeGL()
     glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
 
     //should now be in openGL memory, don't need image file anymore
-    //delete default_image;
+    delete default_image;
 }
 
 void glTextureSelectWidget::paintGL()
@@ -95,4 +95,22 @@ void glTextureSelectWidget::resizeGL(int width, int height)
 void glTextureSelectWidget::mousePressEvent(QMouseEvent *event)
 {
 
+}
+
+void glTextureSelectWidget::loadTextureFromFile(QString& fileName)
+{
+    //load image data from file
+    QImage *image = new QImage(fileName);
+    if(image->isNull())
+    {
+        image = NULL; //something went wrong with loading the file from the resources
+    }
+    QImage imageInOpenGLFormat = QGLWidget::convertToGLFormat(*image);
+
+    //replace current displayed texture
+    glBindTexture(GL_TEXTURE_2D, textureId);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, imageInOpenGLFormat.width(), imageInOpenGLFormat.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE, imageInOpenGLFormat.bits());
+
+    //should now be in openGL memory, don't need image file anymore
+    delete image;
 }

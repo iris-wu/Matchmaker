@@ -38,6 +38,8 @@ public:
     glTextureSelectWidget();
     ~glTextureSelectWidget();
 
+    void loadTextureFromFile(QString& fileName);
+
 protected:
     void initializeGL(); //called once before drawing happens
     void paintGL(); //called during draw call back
