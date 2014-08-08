@@ -4,14 +4,17 @@
 #include <QGLWidget>
 #include <QTextStream>
 
+#include <map>
+#include <vector>
+
 class glMeshSelectWidget: public QGLWidget
 
 {
     struct vertex
     {
-        float x;
-        float y;
-        float z;
+        GLfloat x;
+        GLfloat y;
+        GLfloat z;
     };
 
     struct triangle
@@ -35,6 +38,17 @@ protected:
     void mousePressEvent(QMouseEvent *event); //when mouse is pressed inside the area
 
     triangle testShape;
+
+private:
+
+    void FindNormals( const std::vector<unsigned int>& face );
+    void Normalize( std::vector<GLfloat>& n );
+    void DrawObject();
+
+    std::vector< std::vector< GLfloat > > vertices;
+    std::vector< std::vector< unsigned int > > faces;
+    std::map< unsigned int, std::vector<GLfloat> > vNormals;
+    std::map< unsigned int, std::vector<GLfloat> > fNormals;
 };
 
 #endif // GLMESHSELECTWIDGET_H
