@@ -43,15 +43,25 @@ MainWindow::MainWindow()
 
     //add menu bar and associated options
     QMenu* fileMenu = menuBar()->addMenu(tr("&File"));
+    QMenu* actionMenu = menuBar()->addMenu(tr("&Action"));
 
-    //actions
+    //actions for file Menu
     QAction* loadMeshFileAction = new QAction(tr("Load Mesh File"), this);
     connect(loadMeshFileAction, SIGNAL(triggered()), this, SLOT(SLOT_loadMeshFile()));
     QAction* loadTextureFileAction = new QAction(tr("Load Texture File"), this);
     connect(loadTextureFileAction, SIGNAL(triggered()), this, SLOT(SLOT_loadTextureFile()));
 
+    //actions for Action Menu
+    triangulateTextureAction = new QAction(tr("Triangulate Texture"), this);
+    connect(triangulateTextureAction, SIGNAL(triggered()), this, SLOT(SLOT_TriangulateTexture()));
+    triangulateTextureAction->setEnabled(false);
+
+    //Add actions to menus
+    //fileMenu
     fileMenu->addAction(loadMeshFileAction);
     fileMenu->addAction(loadTextureFileAction);
+    //actionMenu
+    actionMenu->addAction(triangulateTextureAction);
 
     //set title and size of window
     setWindowTitle(tr(WINDOW_TITLE));
@@ -99,5 +109,11 @@ void MainWindow::SLOT_loadTextureFile()
 
        //call widget handle read
        glTextureWidget->loadTextureFromFile(fileName);
+       triangulateTextureAction->setEnabled(true);
     }
+}
+
+void MainWindow::SLOT_TriangulateTexture()
+{
+    glTextureWidget->triangulatePoints();
 }

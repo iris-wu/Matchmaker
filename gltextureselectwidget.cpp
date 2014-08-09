@@ -74,8 +74,7 @@ void glTextureSelectWidget::initializeGL()
 
 void glTextureSelectWidget::paintGL()
 {
-    //use gree to draw lines
-    glColor3f(0,1,0);
+
 
     glVertexPointer(3, GL_FLOAT, 0, &textureOfFace.vertexACor.x);
     glTexCoordPointer(2, GL_FLOAT, 0,  &textureOfFace.vertexATex.s);
@@ -85,8 +84,19 @@ void glTextureSelectWidget::paintGL()
     {
         //draw constrain points, don't want to use texture in this case
         glDisable(GL_TEXTURE_2D);
-        glColor3f(0.5, 0,0.5);
 
+        //draw user Constraint triangles
+        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+        glColor3f(0,1,0);  //use gree to draw lines
+        for(int i = 0; i < triangulatedConstraints.size(); i++)
+        {
+            glVertexPointer(3, GL_FLOAT, 0,  &triangulatedConstraints[i].point1.x);
+            glDrawArrays(GL_TRIANGLES, 0, 3);
+        }
+
+        //use purple for constraint points
+        glColor3f(0.5, 0,0.5);
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
         //draw border constraints
         for(int i = 0; i < 12; i++)
         {
@@ -94,7 +104,7 @@ void glTextureSelectWidget::paintGL()
             glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
         }
 
-        //draw user constraints
+        //draw user constraints points
         for(int i = 0; i < userConstraints.size(); i++)
         {
             glVertexPointer(3, GL_FLOAT, 0,  &userConstraints[i].rightBottom.x);
@@ -198,4 +208,42 @@ glTextureSelectWidget::constraintPoint glTextureSelectWidget::createContraintPoi
     newPoint.rightTop.z = 0;
 
     return newPoint;
+}
+
+void glTextureSelectWidget::triangulatePoints()
+{
+    QVector<MathAlgorithms::Vertex> points;
+
+    //add default border constraint points, calculate again to avoid roundoff error
+    //Bottom
+    points.append(MathAlgorithms::Vertex({ 0, 0, 0}));
+    points.append(MathAlgorithms::Vertex({ GL_TEXTUREWIDGET_CANVAS_WIDTH / 3, 0, 0}));
+    points.append(MathAlgorithms::Vertex({ (2 * GL_TEXTUREWIDGET_CANVAS_WIDTH) / 3, 0, 0}));
+    points.append(MathAlgorithms::Vertex({ GL_TEXTUREWIDGET_CANVAS_WIDTH, 0, 0}));
+    //Top
+    points.append(MathAlgorithms::Vertex({ 0, GL_TEXTUREWIDGET_CANVAS_HEIGHT, 0}));
+    points.append(MathAlgorithms::Vertex({ GL_TEXTUREWIDGET_CANVAS_WIDTH / 3, GL_TEXTUREWIDGET_CANVAS_HEIGHT, 0}));
+    points.append(MathAlgorithms::Vertex({ (2 * GL_TEXTUREWIDGET_CANVAS_WIDTH) / 3, GL_TEXTUREWIDGET_CANVAS_HEIGHT, 0}));
+    points.append(MathAlgorithms::Vertex({ GL_TEXTUREWIDGET_CANVAS_WIDTH, GL_TEXTUREWIDGET_CANVAS_HEIGHT, 0}));
+    //Left
+    points.append(MathAlgorithms::Vertex({ 0, GL_TEXTUREWIDGET_CANVAS_HEIGHT / 3, 0}));
+    points.append(MathAlgorithms::Vertex({ 0, (2 * GL_TEXTUREWIDGET_CANVAS_HEIGHT) / 3, 0}));
+    //Right
+    points.append(MathAlgorithms::Vertex({ GL_TEXTUREWIDGET_CANVAS_WIDTH, GL_TEXTUREWIDGET_CANVAS_HEIGHT / 3, 0}));
+    points.append(MathAlgorithms::Vertex({ GL_TEXTUREWIDGET_CANVAS_WIDTH, (2 * GL_TEXTUREWIDGET_CANVAS_HEIGHT) / 3, 0}));
+
+    //add user constraint points
+    for(int i = 0; i < userConstraints.size(); i++)
+    {
+        //need to find center of the constraint point
+        float xLocation = userConstraints[i].leftBottom.x + GL_TEXTUREWIDGET_CONSTRAINT_SIZE;
+        float yLocation = userConstraints[i].leftBottom.y + GL_TEXTUREWIDGET_CONSTRAINT_SIZE;
+
+        points.append(MathAlgorithms::Vertex({ xLocation, yLocation, 0}));
+    }
+
+    triangulatedConstraints = MathAlgorithms::getDelaunayTriangulation(points);
+
+    //redraw glWidget
+    updateGL();
 }

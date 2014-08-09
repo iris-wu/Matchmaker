@@ -21,6 +21,7 @@ public:
 private slots:
     void SLOT_loadMeshFile();
     void SLOT_loadTextureFile();
+    void SLOT_TriangulateTexture();
 
 protected:
     QWidget* mainWidget; //contains basically all layout elements, can be considered the frame of the window
@@ -28,6 +29,7 @@ protected:
     glTextureSelectWidget* glTextureWidget;
     QScrollArea* MeshSelectArea;
     QScrollArea* TextureSelectArea;
+    QAction* triangulateTextureAction;
 };
 
 #endif // MAINWINDOW_H

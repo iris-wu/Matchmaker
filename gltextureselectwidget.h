@@ -3,6 +3,7 @@
 
 #include <QGLWidget>
 #include <QVector>
+#include "mathalgorithms.h"
 
 #define GL_TEXTUREWIDGET_CANVAS_WIDTH 100
 #define GL_TEXTUREWIDGET_CANVAS_HEIGHT 100
@@ -54,6 +55,7 @@ public:
     ~glTextureSelectWidget();
 
     void loadTextureFromFile(QString& fileName);
+    void triangulatePoints();
 
 protected:
 
@@ -74,6 +76,7 @@ protected:
     GLuint textureId;
     constraintPoint borderConstraints [12];
     QVector<constraintPoint> userConstraints;
+    QVector<MathAlgorithms::Triangle> triangulatedConstraints;
 };
 
 #endif // GLTEXTURESELECTWIDGET_H
