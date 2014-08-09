@@ -15,11 +15,13 @@ TEMPLATE = app
 SOURCES += main.cpp\
         mainwindow.cpp \
     glmeshselectwidget.cpp \
-    gltextureselectwidget.cpp
+    gltextureselectwidget.cpp \
+    mathalgorithms.cpp
 
 HEADERS  += mainwindow.h \
     glmeshselectwidget.h \
-    gltextureselectwidget.h
+    gltextureselectwidget.h \
+    mathalgorithms.h
 
 FORMS    +=
 
