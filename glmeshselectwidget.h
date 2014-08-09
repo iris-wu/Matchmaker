@@ -5,7 +5,12 @@
 #include <QTextStream>
 
 #include <map>
+#include <set>
 #include <vector>
+
+#define GL_MESHWIDGET_CANVAS_WIDTH 310
+#define GL_MESHWIDGET_CANVAS_HEIGHT 310
+#define GL_MESHWIDGET_CONSTRAINT_SIZE 3
 
 class glMeshSelectWidget: public QGLWidget
 
@@ -22,6 +27,16 @@ class glMeshSelectWidget: public QGLWidget
         vertex vertexA;
         vertex vertexB;
         vertex vertexC;
+    };
+
+    struct constraintPoint
+    {
+        int pixelXLocation;
+        int pixelYLocation;
+        vertex rightBottom;
+        vertex rightTop;
+        vertex leftBottom;
+        vertex leftTop;
     };
 
 public:
@@ -44,11 +59,27 @@ private:
     void FindNormals( const std::vector<unsigned int>& face );
     void Normalize( std::vector<GLfloat>& n );
     void DrawObject();
+    void FindEdges();
 
-    std::vector< std::vector< GLfloat > > vertices;
-    std::vector< std::vector< unsigned int > > faces;
-    std::map< unsigned int, std::vector<GLfloat> > vNormals;
-    std::map< unsigned int, std::vector<GLfloat> > fNormals;
+    void MeshParameterization();
+    void CreateBorder();
+    constraintPoint CreateContraintPoint(int x, int y);
+    void ConnectBoundaryToMeshes();
+    std::vector<GLfloat> FindClosestVertex( const std::vector<GLfloat>& p1 ) const;
+
+    std::vector< std::vector< GLfloat > > m_vertices;
+    std::vector< std::vector< unsigned int > > m_faces;
+    std::set< std::pair<unsigned int, unsigned int> > m_edges;
+    std::map< unsigned int, std::vector<GLfloat> > m_vNormals;
+    std::map< unsigned int, std::vector<GLfloat> > m_fNormals;
+
+    std::vector< std::vector< GLfloat > > m_originVertices;
+    std::vector< std::vector< GLfloat > > m_paraVertices;
+
+    bool m_meshLoaded;
+    int m_widgetWidth;
+    int m_widgetHeight;
+    constraintPoint m_borderPoints[12];
 };
 
 #endif // GLMESHSELECTWIDGET_H

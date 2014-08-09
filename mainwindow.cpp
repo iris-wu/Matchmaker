@@ -78,7 +78,7 @@ void MainWindow::SLOT_loadMeshFile()
     QFileDialog dialog(this);
     dialog.setDirectory(QCoreApplication::applicationDirPath());
     dialog.setFileMode(QFileDialog::ExistingFile);
-    //dialog.setNameFilter(tr("Images (*.png *.xpm *.jpg)"));
+    dialog.setNameFilter(tr("Images (*.obj)"));
     if(dialog.exec())
     {
        QString fileName = dialog.selectedFiles()[0];
