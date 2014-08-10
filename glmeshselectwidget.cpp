@@ -1,21 +1,12 @@
 #include "glmeshselectwidget.h"
 
 #include <cmath>
+#include <QFileDialog>
+#include <QMouseEvent>
 
 glMeshSelectWidget::glMeshSelectWidget()
-    : m_meshLoaded(false)
+    : m_meshLoaded( false )
 {
-    testShape.vertexA.x = -50;
-    testShape.vertexA.y = -50;
-    testShape.vertexA.z = 0;
-
-    testShape.vertexB.x = 50;
-    testShape.vertexB.y = -50;
-    testShape.vertexB.z = 0;
-
-    testShape.vertexC.x = 0;
-    testShape.vertexC.y = 50;
-    testShape.vertexC.z = 0;
 }
 
 glMeshSelectWidget::~glMeshSelectWidget()
@@ -47,20 +38,22 @@ void glMeshSelectWidget::paintGL()
     DrawObject();
 
     // Draw border points
-    glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
-
-    glColor3f(0.5f, 0.0f, 0.5f);
-    for(int i = 0; i < 12; i++)
+    if ( m_meshLoaded )
     {
-        glVertexPointer(3, GL_FLOAT, 0,  &m_borderPoints[i].rightBottom.x);
-        glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+        glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
+        glColor3f(0.5f, 0.0f, 0.5f);
+
+        for(int i = 0; i < m_borderPoints.size(); i++)
+        {
+            glVertexPointer(3, GL_FLOAT, 0,  &m_borderPoints[i].rightBottom.x);
+            glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+        }
+        for(int i = 0; i < m_userConstraints.size(); i++)
+        {
+            glVertexPointer(3, GL_FLOAT, 0,  &m_userConstraints[i].rightBottom.x);
+            glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+        }
     }
-
-    //use gree to draw lines
-    /*glColor3f(0,1,0);
-
-    glVertexPointer(3, GL_FLOAT, 0, &testShape.vertexA.x);
-    glDrawArrays(GL_LINE_LOOP, 0, 3);*/
 }
 
 void glMeshSelectWidget::resizeGL(int width, int height)
@@ -75,7 +68,7 @@ void glMeshSelectWidget::resizeGL(int width, int height)
 
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    glOrtho(-155, 155, -110, 200, -160, 90);
+    glOrtho(-125, 125, -50, 200, -90, 160);
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
 
@@ -84,7 +77,14 @@ void glMeshSelectWidget::resizeGL(int width, int height)
 
 void glMeshSelectWidget::mousePressEvent(QMouseEvent *event)
 {
+    if( m_meshLoaded )
+    {
+        glMeshSelectWidget::constraintPoint point = CreateContraintPoint(event->x(), event->y());
+        m_userConstraints.push_back(point);
+    }
 
+    //redraw glWidget
+    updateGL();
 }
 
 void glMeshSelectWidget::loadMeshFileCallback(QTextStream* fileStream)
@@ -96,6 +96,7 @@ void glMeshSelectWidget::loadMeshFileCallback(QTextStream* fileStream)
 
     QString v = "v";
     QString f = "f";
+    QString vt = "vt";
 
     while(!fileStream->atEnd())
     {
@@ -108,6 +109,8 @@ void glMeshSelectWidget::loadMeshFileCallback(QTextStream* fileStream)
         QStringList values = currentLine.split(" ");
         std::vector<GLfloat> vertex(3);
         std::vector<unsigned int> face(3);
+        std::vector<GLfloat> vTexture(3);
+        std::vector<unsigned int> fTexture(3);
 
         QString type = values[0];
         if ( type.compare(v) == 0 )
@@ -123,20 +126,28 @@ void glMeshSelectWidget::loadMeshFileCallback(QTextStream* fileStream)
             for ( unsigned int i = 0; i < 3; ++i )
             {
                 face[i] = (values[i + 1].split("/"))[0].toUInt();
+                fTexture[i] = (values[i + 1].split("/"))[1].toUInt();
             }
             m_faces.push_back( face );
+            m_fTexture.push_back( fTexture );
 
-            FindNormals( face );
+            //FindNormals( face );
+        }
+        else if ( type.compare(vt) == 0 )
+        {
+            vTexture[0] = values[1].toFloat()*250-125;
+            vTexture[1] = values[2].toFloat()*250-50;
+            vTexture[2] = values[3].toFloat();
+            m_vTexture.push_back( vTexture );
         }
     }
 
-    FindEdges();
-
     m_originVertices = m_vertices;
+    m_originFaces = m_faces;
+
     m_meshLoaded = true;
 
-    //do your magic :)
-    MeshParameterization();
+    //FindEdges();
 
     updateGL();
     printf("v: %d, f: %d\n", (int)m_vertices.size(), (int)m_faces.size());
@@ -211,47 +222,31 @@ void glMeshSelectWidget::DrawObject()
     glEnd();
 }
 
-void glMeshSelectWidget::MeshParameterization()
-{
-    for (unsigned int i = 0; i < m_originVertices.size(); ++i )
-    {
-        std::vector<GLfloat> paraVertex = m_originVertices[i];
-        paraVertex[2] = 0.0;
-        m_paraVertices.push_back( paraVertex );
-    }
-
-    m_vertices.clear();
-    m_vertices = m_paraVertices;
-
-    CreateBorder();
-    ConnectBoundaryToMeshes();
-}
-
 void glMeshSelectWidget::CreateBorder()
 {
     //Setup border constraints
     //Left side
-    m_borderPoints[0] = CreateContraintPoint(0, 0);
-    m_borderPoints[1] = CreateContraintPoint(0, m_widgetHeight / 3);
-    m_borderPoints[2] = CreateContraintPoint(0, (2 * m_widgetHeight) / 3);
-    m_borderPoints[3] = CreateContraintPoint(0, m_widgetHeight);
+    m_borderPoints.push_back(CreateContraintPoint(0, 0));
+    m_borderPoints.push_back(CreateContraintPoint(0, m_widgetHeight / 3));
+    m_borderPoints.push_back(CreateContraintPoint(0, (2 * m_widgetHeight) / 3));
+    m_borderPoints.push_back(CreateContraintPoint(0, m_widgetHeight));
     //Top side
-    m_borderPoints[4] = CreateContraintPoint(m_widgetWidth / 3, 0);
-    m_borderPoints[5] = CreateContraintPoint((2 * m_widgetWidth) / 3, 0);
-    m_borderPoints[6] = CreateContraintPoint(m_widgetWidth, 0);
+    m_borderPoints.push_back(CreateContraintPoint(m_widgetWidth / 3, 0));
+    m_borderPoints.push_back(CreateContraintPoint((2 * m_widgetWidth) / 3, 0));
+    m_borderPoints.push_back(CreateContraintPoint(m_widgetWidth, 0));
     //Right side
-    m_borderPoints[7] = CreateContraintPoint(m_widgetWidth, m_widgetHeight / 3);
-    m_borderPoints[8] = CreateContraintPoint(m_widgetWidth, (2 * m_widgetHeight) / 3);
-    m_borderPoints[9] = CreateContraintPoint(m_widgetWidth, m_widgetHeight);
+    m_borderPoints.push_back(CreateContraintPoint(m_widgetWidth, m_widgetHeight / 3));
+    m_borderPoints.push_back(CreateContraintPoint(m_widgetWidth, (2 * m_widgetHeight) / 3));
+    m_borderPoints.push_back(CreateContraintPoint(m_widgetWidth, m_widgetHeight));
     //Bottom side
-    m_borderPoints[10] = CreateContraintPoint(m_widgetWidth / 3, m_widgetHeight);
-    m_borderPoints[11] = CreateContraintPoint((2 * m_widgetWidth) / 3, m_widgetHeight);
+    m_borderPoints.push_back(CreateContraintPoint(m_widgetWidth / 3, m_widgetHeight));
+    m_borderPoints.push_back(CreateContraintPoint((2 * m_widgetWidth) / 3, m_widgetHeight));
 }
 
 glMeshSelectWidget::constraintPoint glMeshSelectWidget::CreateContraintPoint(int x, int y)
 {
-    int glXLocation = ((float)x / m_widgetWidth) * GL_MESHWIDGET_CANVAS_WIDTH - 155;
-    int glYLocation = ((float)y / m_widgetHeight) * GL_MESHWIDGET_CANVAS_HEIGHT - 110;
+    int glXLocation = ((float)x / m_widgetWidth) * GL_MESHWIDGET_CANVAS_WIDTH - 80;
+    int glYLocation = ((float)(m_widgetHeight - y) / m_widgetHeight) * GL_MESHWIDGET_CANVAS_HEIGHT - 10;
 
     //X and Y location is always center of the constraint point
     constraintPoint newPoint;
@@ -300,29 +295,18 @@ void glMeshSelectWidget::FindEdges()
     printf("e: %d\n", (int)m_edges.size() );
 }
 
-void glMeshSelectWidget::ConnectBoundaryToMeshes()
+void glMeshSelectWidget::parameterizeMesh()
 {
-    std::vector<GLfloat> closestVertex;
-    for ( unsigned int i = 0; i < 12; ++i )
-    {
+    m_vertices = m_vTexture;
+    m_faces = m_fTexture;
 
-    }
-}
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    glOrtho(-80, 80, -10, 150, -90, 160);
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
 
-std::vector<GLfloat> glMeshSelectWidget::FindClosestVertex(const std::vector<GLfloat>& p1 ) const
-{
-    GLfloat min = 10000;
-    std::vector<GLfloat> closestVertex;
-    for ( unsigned int i = 0; i < m_originVertices.size(); ++i )
-    {
-        std::vector<GLfloat> currentVertex = m_originVertices[i];
-        GLfloat distance = sqrt(pow((currentVertex[0] - p1[0]), 2) + pow((currentVertex[1] - p1[1]), 2));
-        if ( distance < min )
-        {
-            min = distance;
-            closestVertex = currentVertex;
-        }
-    }
+    CreateBorder();
 
-    return closestVertex;
+    updateGL();
 }

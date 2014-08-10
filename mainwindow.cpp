@@ -1,5 +1,4 @@
 #include "mainwindow.h"
-#include "ui_mainwindow.h"
 #include <QFileDialog>
 #include <QTextStream>
 
@@ -52,6 +51,10 @@ MainWindow::MainWindow()
     connect(loadTextureFileAction, SIGNAL(triggered()), this, SLOT(SLOT_loadTextureFile()));
 
     //actions for Action Menu
+    meshParameterizationAction = new QAction(tr("Parameterize Mesh"), this);
+    connect(meshParameterizationAction, SIGNAL(triggered()), this, SLOT(SLOT_ParameterizeMesh()));
+    meshParameterizationAction->setEnabled(false);
+
     triangulateTextureAction = new QAction(tr("Triangulate Texture"), this);
     connect(triangulateTextureAction, SIGNAL(triggered()), this, SLOT(SLOT_TriangulateTexture()));
     triangulateTextureAction->setEnabled(false);
@@ -61,6 +64,7 @@ MainWindow::MainWindow()
     fileMenu->addAction(loadMeshFileAction);
     fileMenu->addAction(loadTextureFileAction);
     //actionMenu
+    actionMenu->addAction(meshParameterizationAction);
     actionMenu->addAction(triangulateTextureAction);
 
     //set title and size of window
@@ -88,6 +92,7 @@ void MainWindow::SLOT_loadMeshFile()
 
        //call widget handle read
        glMeshWidget->loadMeshFileCallback(fileStream);
+       meshParameterizationAction->setEnabled(true);
 
        //all done
        delete fileStream;
@@ -111,6 +116,11 @@ void MainWindow::SLOT_loadTextureFile()
        glTextureWidget->loadTextureFromFile(fileName);
        triangulateTextureAction->setEnabled(true);
     }
+}
+
+void MainWindow::SLOT_ParameterizeMesh()
+{
+    glMeshWidget->parameterizeMesh();
 }
 
 void MainWindow::SLOT_TriangulateTexture()

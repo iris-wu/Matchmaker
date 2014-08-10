@@ -21,6 +21,7 @@ public:
 private slots:
     void SLOT_loadMeshFile();
     void SLOT_loadTextureFile();
+    void SLOT_ParameterizeMesh();
     void SLOT_TriangulateTexture();
 
 protected:
@@ -29,6 +30,7 @@ protected:
     glTextureSelectWidget* glTextureWidget;
     QScrollArea* MeshSelectArea;
     QScrollArea* TextureSelectArea;
+    QAction* meshParameterizationAction;
     QAction* triangulateTextureAction;
 };
 

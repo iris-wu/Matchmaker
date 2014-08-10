@@ -3,14 +3,17 @@
 
 #include <QGLWidget>
 #include <QTextStream>
+#include <QVector>
 
 #include <map>
 #include <set>
 #include <vector>
 
-#define GL_MESHWIDGET_CANVAS_WIDTH 310
-#define GL_MESHWIDGET_CANVAS_HEIGHT 310
-#define GL_MESHWIDGET_CONSTRAINT_SIZE 3
+#define GL_MESHWIDGET_CANVAS_WIDTH 160
+#define GL_MESHWIDGET_CANVAS_HEIGHT 160
+#define X_OFFSET -80
+#define Y_OFFSET -10
+#define GL_MESHWIDGET_CONSTRAINT_SIZE 1
 
 class glMeshSelectWidget: public QGLWidget
 
@@ -46,6 +49,8 @@ public:
     //is called when a the user wants to load a different mesh file
     void loadMeshFileCallback(QTextStream* fileStream);
 
+    void parameterizeMesh();
+
 protected:
     void initializeGL(); //called once before drawing happens
     void paintGL(); //called during draw call back
@@ -61,25 +66,29 @@ private:
     void DrawObject();
     void FindEdges();
 
-    void MeshParameterization();
     void CreateBorder();
     constraintPoint CreateContraintPoint(int x, int y);
-    void ConnectBoundaryToMeshes();
-    std::vector<GLfloat> FindClosestVertex( const std::vector<GLfloat>& p1 ) const;
 
     std::vector< std::vector< GLfloat > > m_vertices;
     std::vector< std::vector< unsigned int > > m_faces;
+
+    std::vector< std::vector< GLfloat > > m_originVertices;
+    std::vector< std::vector< unsigned int > > m_originFaces;
+
+    std::vector< std::vector< GLfloat > > m_vTexture;
+    std::vector< std::vector< unsigned int > > m_fTexture;
+
     std::set< std::pair<unsigned int, unsigned int> > m_edges;
+
     std::map< unsigned int, std::vector<GLfloat> > m_vNormals;
     std::map< unsigned int, std::vector<GLfloat> > m_fNormals;
 
-    std::vector< std::vector< GLfloat > > m_originVertices;
-    std::vector< std::vector< GLfloat > > m_paraVertices;
-
-    bool m_meshLoaded;
     int m_widgetWidth;
     int m_widgetHeight;
-    constraintPoint m_borderPoints[12];
+    QVector<constraintPoint> m_borderPoints;
+    QVector<constraintPoint> m_userConstraints;
+
+    bool m_meshLoaded;
 };
 
 #endif // GLMESHSELECTWIDGET_H
