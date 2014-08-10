@@ -150,7 +150,6 @@ void glMeshSelectWidget::loadMeshFileCallback(QTextStream* fileStream)
     //FindEdges();
 
     updateGL();
-    printf("v: %d, f: %d\n", (int)m_vertices.size(), (int)m_faces.size());
 }
 
 void glMeshSelectWidget::FindNormals(const std::vector<unsigned int> &face)
@@ -245,8 +244,8 @@ void glMeshSelectWidget::CreateBorder()
 
 glMeshSelectWidget::constraintPoint glMeshSelectWidget::CreateContraintPoint(int x, int y)
 {
-    int glXLocation = ((float)x / m_widgetWidth) * GL_MESHWIDGET_CANVAS_WIDTH - 80;
-    int glYLocation = ((float)(m_widgetHeight - y) / m_widgetHeight) * GL_MESHWIDGET_CANVAS_HEIGHT - 10;
+    int glXLocation = ((float)x / m_widgetWidth) * GL_MESHWIDGET_CANVAS_WIDTH + X_OFFSET;
+    int glYLocation = ((float)(m_widgetHeight - y) / m_widgetHeight) * GL_MESHWIDGET_CANVAS_HEIGHT + Y_OFFSET;
 
     //X and Y location is always center of the constraint point
     constraintPoint newPoint;
@@ -302,7 +301,7 @@ void glMeshSelectWidget::parameterizeMesh()
 
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    glOrtho(-80, 80, -10, 150, -90, 160);
+    glOrtho(-70, 70, 0, 140, -90, 160);
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
 

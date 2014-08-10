@@ -9,10 +9,10 @@
 #include <set>
 #include <vector>
 
-#define GL_MESHWIDGET_CANVAS_WIDTH 160
-#define GL_MESHWIDGET_CANVAS_HEIGHT 160
-#define X_OFFSET -80
-#define Y_OFFSET -10
+#define GL_MESHWIDGET_CANVAS_WIDTH 140
+#define GL_MESHWIDGET_CANVAS_HEIGHT 140
+#define X_OFFSET -70
+#define Y_OFFSET 0
 #define GL_MESHWIDGET_CONSTRAINT_SIZE 1
 
 class glMeshSelectWidget: public QGLWidget
@@ -56,8 +56,6 @@ protected:
     void paintGL(); //called during draw call back
     void resizeGL(int width, int height); //called when widget size changes
     void mousePressEvent(QMouseEvent *event); //when mouse is pressed inside the area
-
-    triangle testShape;
 
 private:
 
