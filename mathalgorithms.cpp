@@ -10,14 +10,13 @@ QVector<MathAlgorithms::Triangle> MathAlgorithms::getDelaunayTriangulation(QVect
     {
         MathAlgorithms::Vertex currentPoint = aPoints[outerIndex];
 
-        for(int innerIndex = outerIndex; innerIndex < aPoints.size(); innerIndex++)
+        for(int nextPointIndex = outerIndex + 1; nextPointIndex < aPoints.size(); nextPointIndex++)
         {
-            //create new triangle only if we have enough points for creating one
-            if(innerIndex + 1 < aPoints.size() && innerIndex + 2 < aPoints.size() )
-            {
-                MathAlgorithms::Vertex currentPointPlus1 = aPoints[innerIndex + 1];
-                MathAlgorithms::Vertex currentPointPlus2 = aPoints[innerIndex + 2];
+            MathAlgorithms::Vertex currentPointPlus1 = aPoints[nextPointIndex];
 
+            for(int nextNextPointIndex = nextPointIndex + 1; nextNextPointIndex < aPoints.size(); nextNextPointIndex++)
+            {
+                MathAlgorithms::Vertex currentPointPlus2 = aPoints[nextNextPointIndex];
                 createCounterClockwiseTriangle(trianglesForPoints, currentPoint, currentPointPlus1, currentPointPlus2);
             }
         }
