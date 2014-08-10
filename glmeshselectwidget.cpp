@@ -68,7 +68,14 @@ void glMeshSelectWidget::resizeGL(int width, int height)
 
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    glOrtho(-125, 125, -50, 200, -90, 160);
+    if ( m_meshLoaded )
+    {
+        glOrtho(-75, 75, 0, 150, -90, 160);
+    }
+    else
+    {
+        glOrtho(-125, 125, -50, 200, -90, 160);
+    }
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
 
@@ -144,8 +151,6 @@ void glMeshSelectWidget::loadMeshFileCallback(QTextStream* fileStream)
 
     m_originVertices = m_vertices;
     m_originFaces = m_faces;
-
-    m_meshLoaded = true;
 
     //FindEdges();
 
@@ -247,6 +252,15 @@ glMeshSelectWidget::constraintPoint glMeshSelectWidget::CreateContraintPoint(int
     int glXLocation = ((float)x / m_widgetWidth) * GL_MESHWIDGET_CANVAS_WIDTH + X_OFFSET;
     int glYLocation = ((float)(m_widgetHeight - y) / m_widgetHeight) * GL_MESHWIDGET_CANVAS_HEIGHT + Y_OFFSET;
 
+    std::vector<GLfloat> closestVertex = GetClosestVertex( glXLocation, glYLocation );
+    m_constraints.push_back( closestVertex );
+
+    //printf("border: %d %d\n", glXLocation, glYLocation);
+    //printf("closest: %f %f\n", closestVertex[0], closestVertex[1]);
+
+    glXLocation = (int)closestVertex[0];
+    glYLocation = (int)closestVertex[1];
+
     //X and Y location is always center of the constraint point
     constraintPoint newPoint;
     newPoint.pixelXLocation = glXLocation;
@@ -298,14 +312,38 @@ void glMeshSelectWidget::parameterizeMesh()
 {
     m_vertices = m_vTexture;
     m_faces = m_fTexture;
+    m_meshLoaded = true;
 
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    glOrtho(-70, 70, 0, 140, -90, 160);
+    glOrtho(-75, 75, 0, 150, -90, 160);
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
 
     CreateBorder();
 
     updateGL();
+}
+
+std::vector<GLfloat> glMeshSelectWidget::GetClosestVertex( GLfloat x, GLfloat y )
+{
+    std::vector<GLfloat> closestVertex;
+    GLfloat minDistance = 150;
+
+    for( unsigned int i = 0; i < m_vertices.size(); ++i )
+    {
+        std::vector<GLfloat> currentVertex = m_vertices[i];
+        if ( currentVertex[0] < -75 || currentVertex[0] > 75 || currentVertex[1] < 0 || currentVertex[i] > 150 )
+        {
+            continue;
+        }
+
+        GLfloat distance = sqrt( pow( currentVertex[0] - x, 2 ) + pow( currentVertex[1] - y ,2 ) );
+        if ( distance < minDistance )
+        {
+            minDistance = distance;
+            closestVertex = currentVertex;
+        }
+    }
+    return closestVertex;
 }

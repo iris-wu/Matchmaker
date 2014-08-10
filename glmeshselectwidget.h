@@ -9,9 +9,9 @@
 #include <set>
 #include <vector>
 
-#define GL_MESHWIDGET_CANVAS_WIDTH 140
-#define GL_MESHWIDGET_CANVAS_HEIGHT 140
-#define X_OFFSET -70
+#define GL_MESHWIDGET_CANVAS_WIDTH 150
+#define GL_MESHWIDGET_CANVAS_HEIGHT 150
+#define X_OFFSET -75
 #define Y_OFFSET 0
 #define GL_MESHWIDGET_CONSTRAINT_SIZE 1
 
@@ -66,6 +66,7 @@ private:
 
     void CreateBorder();
     constraintPoint CreateContraintPoint(int x, int y);
+    std::vector<GLfloat> GetClosestVertex( GLfloat x, GLfloat y );
 
     std::vector< std::vector< GLfloat > > m_vertices;
     std::vector< std::vector< unsigned int > > m_faces;
@@ -83,8 +84,10 @@ private:
 
     int m_widgetWidth;
     int m_widgetHeight;
+
     QVector<constraintPoint> m_borderPoints;
     QVector<constraintPoint> m_userConstraints;
+    std::vector< std::vector< GLfloat > > m_constraints;
 
     bool m_meshLoaded;
 };
