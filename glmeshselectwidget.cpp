@@ -367,7 +367,8 @@ void glMeshSelectWidget::AddVirtualBoundary( const std::set<unsigned int>& edgeP
 {
     CreateBorder();
 
-    QVector<MathAlgorithms::Vertex> points;
+    QVector<MathAlgorithms::Vertex> fixedPoints;
+    QVector<MathAlgorithms::Vertex> relativePoints;
 
     // for each border point
     for ( int i = 0; i < m_borderPoints.size(); ++i )
@@ -383,7 +384,7 @@ void glMeshSelectWidget::AddVirtualBoundary( const std::set<unsigned int>& edgeP
         vertex.x = newPoint[0];
         vertex.y = newPoint[1];
         vertex.z = newPoint[2];
-        points.push_back(vertex);
+        fixedPoints.push_back(vertex);
     }
 
     for ( std::set<unsigned int>::iterator itr = edgePoints.begin(); itr != edgePoints.end(); ++itr )
@@ -394,10 +395,10 @@ void glMeshSelectWidget::AddVirtualBoundary( const std::set<unsigned int>& edgeP
         vertex.x = m_vTexture[currentIndex][0];
         vertex.y = m_vTexture[currentIndex][1];
         vertex.z = m_vTexture[currentIndex][2];
-        points.push_back(vertex);
+        relativePoints.push_back(vertex);
     }
 
     // get Delaunay triangles
-    QVector<MathAlgorithms::Triangle> triangles = MathAlgorithms::getDelaunayTriangulation(points);
-    printf("numOfTriangles: %d\n", (int)triangles.size() );
+    QVector<MathAlgorithms::Triangle> triangles = MathAlgorithms::getDelaunayTriangulation(fixedPoints, relativePoints);
+    printf("numOfTriangles: %d\n", (int)triangles.size());
 }

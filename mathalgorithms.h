@@ -22,7 +22,9 @@ public:
 
 
 
+
    static QVector<Triangle> getDelaunayTriangulation(QVector<Vertex> aPoints);
+   static QVector<Triangle> getDelaunayTriangulation(QVector<Vertex> aFixedPoints, QVector<Vertex> aRelativePoints);
    static void createCounterClockwiseTriangle(QVector<Triangle>& triangleStorage, Vertex point1, Vertex point2, Vertex point3);
 };
 
