@@ -204,14 +204,14 @@ glMeshSelectWidget::constraintPoint glMeshSelectWidget::CreateContraintPoint(int
     //int glXLocation = x;
     //int glYLocation = y;
 
-    //std::vector<GLfloat> closestVertex = GetClosestVertex( glXLocation, glYLocation );
-    //m_constraints.push_back( closestVertex );
+    std::vector<GLfloat> closestVertex = GetClosestVertex( glXLocation, glYLocation );
+    m_constraints.push_back( closestVertex );
 
     //printf("border: %d %d\n", glXLocation, glYLocation);
     //printf("closest: %f %f\n", closestVertex[0], closestVertex[1]);
 
-    //glXLocation = (int)closestVertex[0];
-    //glYLocation = (int)closestVertex[1];
+    glXLocation = (int)closestVertex[0];
+    glYLocation = (int)closestVertex[1];
 
     //X and Y location is always center of the constraint point
     constraintPoint newPoint;
@@ -265,13 +265,12 @@ void glMeshSelectWidget::parameterizeMesh()
     m_meshLoaded = true;
 
     // init
-    m_actualVTexture = m_vTexture;
+    m_actualVTexture.clear();
     m_actualFaces = m_originFaces;
     m_actualFTexture = m_fTexture;
 
-    std::set<unsigned int> neighborsOfRemovedVertices;
-    RemoveFacesOutsideBoundary( neighborsOfRemovedVertices );
-    //AddVirtualBoundary( neighborsOfRemovedVertices );
+    RemoveFacesOutsideBoundary();
+    CreateBorder();
 
     // projection (2D) points
     m_vertices = m_vTexture;
@@ -296,14 +295,9 @@ std::vector<GLfloat> glMeshSelectWidget::GetClosestVertex( GLfloat x, GLfloat y 
     std::vector<GLfloat> closestVertex;
     GLfloat minDistance = 150;
 
-    for( unsigned int i = 0; i < m_vertices.size(); ++i )
+    for( unsigned int i = 0; i < m_actualVTexture.size(); ++i )
     {
-        std::vector<GLfloat> currentVertex = m_vertices[i];
-        if ( (currentVertex[0] < -75 || currentVertex[0] > 75) || (currentVertex[1] < 0 || currentVertex[1] > 150) )
-        {
-            continue;
-        }
-
+        std::vector<GLfloat> currentVertex = m_actualVTexture[i];
         GLfloat distance = sqrt( pow( currentVertex[0] - x, 2 ) + pow( currentVertex[1] - y ,2 ) );
         if ( distance < minDistance )
         {
@@ -314,37 +308,20 @@ std::vector<GLfloat> glMeshSelectWidget::GetClosestVertex( GLfloat x, GLfloat y 
     return closestVertex;
 }
 
-void glMeshSelectWidget::RemoveFacesOutsideBoundary( std::set<unsigned int>& neighborsOfRemovedVertices )
+void glMeshSelectWidget::RemoveFacesOutsideBoundary()
 {
     for ( unsigned int i = 0; i < m_vTexture.size(); ++i )
     {
         std::vector<GLfloat> currentVertex = m_vTexture[i];
         // if a vertex is outside boundary
-        if ( (currentVertex[0] < -70 || currentVertex[0] > 70) || (currentVertex[1] < 5 || currentVertex[1] > 145) )
+        if ( (currentVertex[0] < -75 || currentVertex[0] > 75) || (currentVertex[1] < 0 || currentVertex[1] > 150) )
         {
-            // remove the vertex if it's in the neighbor set
-            std::set<unsigned int>::iterator itr = neighborsOfRemovedVertices.find( i + 1 );
-            if ( itr != neighborsOfRemovedVertices.end() )
-            {
-                neighborsOfRemovedVertices.erase( itr );
-            }
-
             // find faces having this vertex
             for ( int j = 0; j < m_actualFTexture.size(); ++j )
             {
                 std::vector<unsigned int> currentFTexture = m_actualFTexture[j];
                 if ( currentFTexture[0] - 1 == i || currentFTexture[1] - 1 == i || currentFTexture[2] - 1 == i )
                 {
-                    // collect neighbors of the removed vertex
-                    for ( unsigned int k = 0; k < 3; ++k )
-                    {
-                        if ( currentFTexture[k] - 1 == i )
-                        {
-                            neighborsOfRemovedVertices.insert( currentFTexture[(k+1)%3] );
-                            neighborsOfRemovedVertices.insert( currentFTexture[(k+2)%3] );
-                        }
-                    }
-
                     // remove the face
                     m_actualFTexture.erase( m_actualFTexture.begin() + j );
                     m_actualFaces.erase( m_actualFaces.begin() + j );
@@ -352,52 +329,9 @@ void glMeshSelectWidget::RemoveFacesOutsideBoundary( std::set<unsigned int>& nei
                 }
             }
         }
+        else
+        {
+            m_actualVTexture.push_back( currentVertex );
+        }
     }
-
-    // debug
-    //printf("neighbors: %d\n", (int)neighborsOfRemovedVertices.size() );
-    /*for ( std::set<unsigned int>::iterator itr = neighborsOfRemovedVertices.begin(); itr != neighborsOfRemovedVertices.end(); ++itr )
-    {
-        unsigned int currentIndex = *itr - 1;
-        m_borderPoints.push_back( CreateContraintPoint( m_vTexture[currentIndex][0], m_vTexture[currentIndex][1] ) );
-    }*/
-}
-
-void glMeshSelectWidget::AddVirtualBoundary( const std::set<unsigned int>& edgePoints )
-{
-    CreateBorder();
-
-    QVector<MathAlgorithms::Vertex> points;
-
-    // for each border point
-    for ( int i = 0; i < m_borderPoints.size(); ++i )
-    {
-        // add new boundary points to the set
-        std::vector<GLfloat> newPoint(3);
-        newPoint[0] = m_borderPoints[i].leftBottom.x + GL_MESHWIDGET_CONSTRAINT_SIZE;
-        newPoint[1] = m_borderPoints[i].leftBottom.y + GL_MESHWIDGET_CONSTRAINT_SIZE;
-        newPoint[2] = 0.0;
-        m_actualVTexture.push_back( newPoint );
-
-        MathAlgorithms::Vertex vertex;
-        vertex.x = newPoint[0];
-        vertex.y = newPoint[1];
-        vertex.z = newPoint[2];
-        points.push_back(vertex);
-    }
-
-    for ( std::set<unsigned int>::iterator itr = edgePoints.begin(); itr != edgePoints.end(); ++itr )
-    {
-        unsigned int currentIndex = *itr - 1;
-
-        MathAlgorithms::Vertex vertex;
-        vertex.x = m_vTexture[currentIndex][0];
-        vertex.y = m_vTexture[currentIndex][1];
-        vertex.z = m_vTexture[currentIndex][2];
-        points.push_back(vertex);
-    }
-
-    // get Delaunay triangles
-    QVector<MathAlgorithms::Triangle> triangles = MathAlgorithms::getDelaunayTriangulation(points);
-    printf("numOfTriangles: %d\n", (int)triangles.size() );
 }

@@ -62,9 +62,7 @@ private:
     void DrawObject();
     void FindEdges();
 
-    void RemoveFacesOutsideBoundary( std::set<unsigned int>& neighborsOfRemovedVertices );
-    void AddVirtualBoundary( const std::set<unsigned int>& edgePoints );
-
+    void RemoveFacesOutsideBoundary();
     void CreateBorder();
     constraintPoint CreateContraintPoint(int x, int y);
     std::vector<GLfloat> GetClosestVertex( GLfloat x, GLfloat y );
@@ -81,8 +79,8 @@ private:
     std::vector< std::vector< unsigned int > > m_fTexture;
 
     // actual vertices and faces after cutting and adding boundary
-    std::vector< std::vector< unsigned int > > m_actualFaces;   // orgin faces - faces cut
-    std::vector< std::vector< GLfloat > > m_actualVTexture;     // orgin texture vertices + additional boundary points
+    std::vector< std::vector< unsigned int > > m_actualFaces;   // origin faces - faces cut
+    std::vector< std::vector< GLfloat > > m_actualVTexture;     // origin texture vertices - texture vertices cut
     std::vector< std::vector< unsigned int > > m_actualFTexture;    // origin texture faces - texture faces cut
 
     std::set< std::pair<unsigned int, unsigned int> > m_edges;
