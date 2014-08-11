@@ -59,10 +59,11 @@ protected:
 
 private:
 
-    void FindNormals( const std::vector<unsigned int>& face );
-    void Normalize( std::vector<GLfloat>& n );
     void DrawObject();
     void FindEdges();
+
+    void RemoveFacesOutsideBoundary( std::set<unsigned int>& neighborsOfRemovedVertices );
+    void AddVirtualBoundary( const std::set<unsigned int>& edgePoints );
 
     void CreateBorder();
     constraintPoint CreateContraintPoint(int x, int y);
@@ -71,16 +72,20 @@ private:
     std::vector< std::vector< GLfloat > > m_vertices;
     std::vector< std::vector< unsigned int > > m_faces;
 
+    // origin mesh vertices and faces which are loaded from .obj file
     std::vector< std::vector< GLfloat > > m_originVertices;
     std::vector< std::vector< unsigned int > > m_originFaces;
 
+    // origin texture vertices and faces
     std::vector< std::vector< GLfloat > > m_vTexture;
     std::vector< std::vector< unsigned int > > m_fTexture;
 
-    std::set< std::pair<unsigned int, unsigned int> > m_edges;
+    // actual vertices and faces after cutting and adding boundary
+    std::vector< std::vector< unsigned int > > m_actualFaces;   // orgin faces - faces cut
+    std::vector< std::vector< GLfloat > > m_actualVTexture;     // orgin texture vertices + additional boundary points
+    std::vector< std::vector< unsigned int > > m_actualFTexture;    // origin texture faces - texture faces cut
 
-    std::map< unsigned int, std::vector<GLfloat> > m_vNormals;
-    std::map< unsigned int, std::vector<GLfloat> > m_fNormals;
+    std::set< std::pair<unsigned int, unsigned int> > m_edges;
 
     int m_widgetWidth;
     int m_widgetHeight;
