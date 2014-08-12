@@ -5,10 +5,12 @@
 #include <QtOpenGL>
 #include "glmeshselectwidget.h"
 #include "gltextureselectwidget.h"
+#include "glfinalwidget.h"
+#include "glprogresswidget.h"
 
 #define WINDOW_TITLE "Matchmaker"
-#define WINDOW_SIZE_WIDTH 1000
-#define WINDOW_SIZE_HEIGHT 500
+#define WINDOW_SIZE_WIDTH 800
+#define WINDOW_SIZE_HEIGHT 800
 
 class MainWindow : public QMainWindow
 {
@@ -28,8 +30,12 @@ protected:
     QWidget* mainWidget; //contains basically all layout elements, can be considered the frame of the window
     glMeshSelectWidget* glMeshWidget;
     glTextureSelectWidget* glTextureWidget;
+    glProgressWidget* progressWidget;
+    glFinalWidget* finalWidget;
     QScrollArea* MeshSelectArea;
     QScrollArea* TextureSelectArea;
+    QScrollArea* FinalSelectArea;
+    QScrollArea* ProgressSelectArea;
     QAction* meshParameterizationAction;
     QAction* triangulateTextureAction;
 };

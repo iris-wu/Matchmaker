@@ -13,6 +13,8 @@ MainWindow::MainWindow()
     //create GL widgets
     glMeshWidget = new glMeshSelectWidget();
     glTextureWidget = new glTextureSelectWidget();
+    progressWidget = new glProgressWidget();
+    finalWidget = new glFinalWidget();
 
     //MeshSelectArea setup
     MeshSelectArea = new QScrollArea;
@@ -32,12 +34,32 @@ MainWindow::MainWindow()
     TextureSelectArea->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Ignored);
     TextureSelectArea->setMinimumSize(100, 100);
 
+    //ProgressArea Setup
+    ProgressSelectArea = new QScrollArea;
+    ProgressSelectArea->setWidget(progressWidget);
+    ProgressSelectArea->setWidgetResizable(true);
+    ProgressSelectArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    ProgressSelectArea->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    ProgressSelectArea->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Ignored);
+    ProgressSelectArea->setMinimumSize(100, 100);
+
+    //finalWidgetArea setup
+    FinalSelectArea = new QScrollArea;
+    FinalSelectArea->setWidget(finalWidget);
+    FinalSelectArea->setWidgetResizable(true);
+    FinalSelectArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    FinalSelectArea->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    FinalSelectArea->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Ignored);
+    FinalSelectArea->setMinimumSize(100, 100);
+
     //-- Set what layout and add compontents --//
 
     //use grid layout to split screen
     QGridLayout *centralLayout = new QGridLayout;
     centralLayout->addWidget(MeshSelectArea, 0, 0);
     centralLayout->addWidget(TextureSelectArea, 0, 1);
+    centralLayout->addWidget(FinalSelectArea, 1, 0);
+    centralLayout->addWidget(ProgressSelectArea, 1, 1);
     mainWidget->setLayout(centralLayout);
 
     //add menu bar and associated options
@@ -91,6 +113,7 @@ void MainWindow::SLOT_loadMeshFile()
        QTextStream* fileStream= new QTextStream(&file);
 
        //call widget handle read
+       glMeshWidget->makeCurrent();
        glMeshWidget->loadMeshFileCallback(fileStream);
        meshParameterizationAction->setEnabled(true);
 
@@ -113,6 +136,7 @@ void MainWindow::SLOT_loadTextureFile()
        QString fileName = dialog.selectedFiles()[0];
 
        //call widget handle read
+       glTextureWidget->makeCurrent();
        glTextureWidget->loadTextureFromFile(fileName);
        triangulateTextureAction->setEnabled(true);
     }
@@ -120,10 +144,12 @@ void MainWindow::SLOT_loadTextureFile()
 
 void MainWindow::SLOT_ParameterizeMesh()
 {
+    glMeshWidget->makeCurrent();
     glMeshWidget->parameterizeMesh();
 }
 
 void MainWindow::SLOT_TriangulateTexture()
 {
+    glTextureWidget->makeCurrent();
     glTextureWidget->triangulatePoints();
 }

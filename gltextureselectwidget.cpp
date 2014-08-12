@@ -74,8 +74,6 @@ void glTextureSelectWidget::initializeGL()
 
 void glTextureSelectWidget::paintGL()
 {
-
-
     glVertexPointer(3, GL_FLOAT, 0, &textureOfFace.vertexACor.x);
     glTexCoordPointer(2, GL_FLOAT, 0,  &textureOfFace.vertexATex.s);
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
@@ -155,8 +153,12 @@ void glTextureSelectWidget::loadTextureFromFile(QString& fileName)
     glBindTexture(GL_TEXTURE_2D, textureId);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, imageInOpenGLFormat.width(), imageInOpenGLFormat.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE, imageInOpenGLFormat.bits());
 
+    //setup texture rendering options
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
     //should now be in openGL memory, don't need image file anymore
-    delete image;
+    //delete image;
     textureLoaded = true;
 
     //setup border constraints
