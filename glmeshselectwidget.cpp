@@ -88,8 +88,41 @@ void glMeshSelectWidget::mousePressEvent(QMouseEvent *event)
 {
     if( m_meshLoaded )
     {
-        glMeshSelectWidget::constraintPoint point = CreateContraintPoint(event->x(), event->y());
-        m_userConstraints.push_back(point);
+        //coordinates in window coordinates
+        float windowX = event->x();
+        float windowY = event->y();
+
+        //convert to OpenGL ones
+        int glXLocation = ((float) windowX / m_widgetWidth) * GL_MESHWIDGET_CANVAS_WIDTH + X_OFFSET;
+        int glYLocation = ((float)(m_widgetHeight - windowY) / m_widgetHeight) * GL_MESHWIDGET_CANVAS_HEIGHT + Y_OFFSET;
+
+        //find the closest vertices to this event
+        std::vector<GLfloat> closestVertex = GetClosestVertex(glXLocation, glYLocation);
+
+        //X and Y location is always center of the constraint point
+        int vXLocation = (int) closestVertex[0];
+        int vYLocation = (int) closestVertex[1];
+        constraintPoint newPoint;
+        newPoint.pixelXLocation = vXLocation;
+        newPoint.pixelYLocation = vYLocation;
+        //Left Bottom
+        newPoint.leftBottom.x = vXLocation - GL_MESHWIDGET_CONSTRAINT_SIZE;
+        newPoint.leftBottom.y = vYLocation - GL_MESHWIDGET_CONSTRAINT_SIZE;
+        newPoint.leftBottom.z = 0;
+        //Left Top
+        newPoint.leftTop.x = vXLocation - GL_MESHWIDGET_CONSTRAINT_SIZE;
+        newPoint.leftTop.y = vYLocation + GL_MESHWIDGET_CONSTRAINT_SIZE;
+        newPoint.leftTop.z = 0;
+        //Right Bottom
+        newPoint.rightBottom.x = vXLocation + GL_MESHWIDGET_CONSTRAINT_SIZE;
+        newPoint.rightBottom.y = vYLocation - GL_MESHWIDGET_CONSTRAINT_SIZE;
+        newPoint.rightBottom.z = 0;
+        //Right Top
+        newPoint.rightTop.x = vXLocation + GL_MESHWIDGET_CONSTRAINT_SIZE;
+        newPoint.rightTop.y = vYLocation + GL_MESHWIDGET_CONSTRAINT_SIZE;
+        newPoint.rightTop.z = 0;
+
+        m_userConstraints.push_back(newPoint);
     }
 
     //redraw glWidget
