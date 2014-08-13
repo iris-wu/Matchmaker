@@ -16,12 +16,16 @@ SOURCES += main.cpp\
         mainwindow.cpp \
     glmeshselectwidget.cpp \
     gltextureselectwidget.cpp \
-    mathalgorithms.cpp
+    mathalgorithms.cpp \
+    glfinalwidget.cpp \
+    glprogresswidget.cpp
 
 HEADERS  += mainwindow.h \
     glmeshselectwidget.h \
     gltextureselectwidget.h \
-    mathalgorithms.h
+    mathalgorithms.h \
+    glfinalwidget.h \
+    glprogresswidget.h
 
 FORMS    +=
 
