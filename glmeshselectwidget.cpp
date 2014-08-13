@@ -201,17 +201,17 @@ glMeshSelectWidget::constraintPoint glMeshSelectWidget::CreateContraintPoint(int
 {
     int glXLocation = ((float)x / m_widgetWidth) * GL_MESHWIDGET_CANVAS_WIDTH + X_OFFSET;
     int glYLocation = ((float)(m_widgetHeight - y) / m_widgetHeight) * GL_MESHWIDGET_CANVAS_HEIGHT + Y_OFFSET;
-  //  int glXLocation = x;
- //   int glYLocation = y;
+//    int glXLocation = x;
+//    int glYLocation = y;
 
-    std::vector<GLfloat> closestVertex = GetClosestVertex( glXLocation, glYLocation );
-    m_constraints.push_back( closestVertex );
+//    std::vector<GLfloat> closestVertex = GetClosestVertex( glXLocation, glYLocation );
+//    m_constraints.push_back( closestVertex );
 
-    printf("border: %d %d\n", glXLocation, glYLocation);
-    printf("closest: %f %f\n", closestVertex[0], closestVertex[1]);
+//    printf("border: %d %d\n", glXLocation, glYLocation);
+//    printf("closest: %f %f\n", closestVertex[0], closestVertex[1]);
 
-    glXLocation = (int)closestVertex[0];
-    glYLocation = (int)closestVertex[1];
+//    glXLocation = (int)closestVertex[0];
+//    glYLocation = (int)closestVertex[1];
 
     //X and Y location is always center of the constraint point
     constraintPoint newPoint;
@@ -380,7 +380,7 @@ void glMeshSelectWidget::AddVirtualBoundary( const std::set<unsigned int>& edgeP
         newPoint[0] = m_borderPoints[i].leftBottom.x + GL_MESHWIDGET_CONSTRAINT_SIZE;
         newPoint[1] = m_borderPoints[i].leftBottom.y + GL_MESHWIDGET_CONSTRAINT_SIZE;
         newPoint[2] = 0.0;
-        m_actualVTexture.push_back( newPoint );
+        m_actualVTexture.push_back(newPoint);
 
         MathAlgorithms::Vertex vertex;
         vertex.x = newPoint[0];
