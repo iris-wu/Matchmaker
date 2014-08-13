@@ -201,17 +201,17 @@ glMeshSelectWidget::constraintPoint glMeshSelectWidget::CreateContraintPoint(int
 {
     int glXLocation = ((float)x / m_widgetWidth) * GL_MESHWIDGET_CANVAS_WIDTH + X_OFFSET;
     int glYLocation = ((float)(m_widgetHeight - y) / m_widgetHeight) * GL_MESHWIDGET_CANVAS_HEIGHT + Y_OFFSET;
-    //int glXLocation = x;
-    //int glYLocation = y;
+  //  int glXLocation = x;
+ //   int glYLocation = y;
 
-    //std::vector<GLfloat> closestVertex = GetClosestVertex( glXLocation, glYLocation );
-    //m_constraints.push_back( closestVertex );
+    std::vector<GLfloat> closestVertex = GetClosestVertex( glXLocation, glYLocation );
+    m_constraints.push_back( closestVertex );
 
-    //printf("border: %d %d\n", glXLocation, glYLocation);
-    //printf("closest: %f %f\n", closestVertex[0], closestVertex[1]);
+    printf("border: %d %d\n", glXLocation, glYLocation);
+    printf("closest: %f %f\n", closestVertex[0], closestVertex[1]);
 
-    //glXLocation = (int)closestVertex[0];
-    //glYLocation = (int)closestVertex[1];
+    glXLocation = (int)closestVertex[0];
+    glYLocation = (int)closestVertex[1];
 
     //X and Y location is always center of the constraint point
     constraintPoint newPoint;
@@ -271,11 +271,13 @@ void glMeshSelectWidget::parameterizeMesh()
 
     std::set<unsigned int> edgePoints;
     RemoveFacesOutsideBoundary( edgePoints );
-    AddVirtualBoundary( edgePoints );
 
     // projection (2D) points
     m_vertices = m_vTexture;
     m_faces = m_actualFTexture;
+
+    //add boundary mesh as well
+    AddVirtualBoundary( edgePoints );
 
     // 3D points
     //m_vertices = m_originVertices;
@@ -401,4 +403,34 @@ void glMeshSelectWidget::AddVirtualBoundary( const std::set<unsigned int>& edgeP
     // get Delaunay triangles
     QVector<MathAlgorithms::Triangle> triangles = MathAlgorithms::getDelaunayTriangulation(fixedPoints, relativePoints);
     printf("numOfTriangles: %d\n", (int)triangles.size());
+
+    //add border to faces and vertices
+    for(int i = 0; i < triangles.size(); i++)
+    {
+        //add vertices
+        std::vector<GLfloat> lVertex1;
+        lVertex1.push_back(triangles[i].point1.x);
+        lVertex1.push_back(triangles[i].point1.y);
+        lVertex1.push_back(triangles[i].point1.z);
+        m_vertices.push_back(lVertex1);
+
+        std::vector<GLfloat> lVertex2;
+        lVertex2.push_back(triangles[i].point2.x);
+        lVertex2.push_back(triangles[i].point2.y);
+        lVertex2.push_back(triangles[i].point2.z);
+        m_vertices.push_back(lVertex2);
+
+        std::vector<GLfloat> lVertex3;
+        lVertex3.push_back(triangles[i].point3.x);
+        lVertex3.push_back(triangles[i].point3.y);
+        lVertex3.push_back(triangles[i].point3.z);
+        m_vertices.push_back(lVertex3);
+
+        //add to face
+        std::vector<unsigned int> newFace;
+        newFace.push_back(m_vertices.size() - 2);
+        newFace.push_back(m_vertices.size() - 1);
+        newFace.push_back(m_vertices.size() - 0);
+        m_faces.push_back(newFace);
+    }
 }
