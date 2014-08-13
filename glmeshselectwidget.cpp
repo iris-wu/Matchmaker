@@ -407,30 +407,71 @@ void glMeshSelectWidget::AddVirtualBoundary( const std::set<unsigned int>& edgeP
     //add border to faces and vertices
     for(int i = 0; i < triangles.size(); i++)
     {
+        int point1Index = -1;
+        int point2Index = -1;
+        int point3Index = -1;
+
+        //check if a vertex is already in this list, don't want to introduce duplicates
+        for(int ii = 0; ii < m_vertices.size(); ii++)
+        {
+            if(m_vertices[ii][0] == triangles[i].point1.x
+            && m_vertices[ii][1] == triangles[i].point1.y
+            && m_vertices[ii][2] == triangles[i].point1.z)
+            {
+               point1Index = ii + 1;
+            }
+
+            if(m_vertices[ii][0] == triangles[i].point2.x
+            && m_vertices[ii][1] == triangles[i].point2.y
+            && m_vertices[ii][2] == triangles[i].point2.z)
+            {
+               point2Index = ii + 1;
+            }
+
+            if(m_vertices[ii][0] == triangles[i].point3.x
+            && m_vertices[ii][1] == triangles[i].point3.y
+            && m_vertices[ii][2] == triangles[i].point3.z)
+            {
+               point3Index = ii + 1;
+            }
+        }
+
         //add vertices
-        std::vector<GLfloat> lVertex1;
-        lVertex1.push_back(triangles[i].point1.x);
-        lVertex1.push_back(triangles[i].point1.y);
-        lVertex1.push_back(triangles[i].point1.z);
-        m_vertices.push_back(lVertex1);
+        if(point1Index == -1)
+        {
+            std::vector<GLfloat> lVertex1;
+            lVertex1.push_back(triangles[i].point1.x);
+            lVertex1.push_back(triangles[i].point1.y);
+            lVertex1.push_back(triangles[i].point1.z);
+            m_vertices.push_back(lVertex1);
+            point1Index = m_vertices.size();
+        }
 
-        std::vector<GLfloat> lVertex2;
-        lVertex2.push_back(triangles[i].point2.x);
-        lVertex2.push_back(triangles[i].point2.y);
-        lVertex2.push_back(triangles[i].point2.z);
-        m_vertices.push_back(lVertex2);
+        if(point2Index == -1)
+        {
+            std::vector<GLfloat> lVertex2;
+            lVertex2.push_back(triangles[i].point2.x);
+            lVertex2.push_back(triangles[i].point2.y);
+            lVertex2.push_back(triangles[i].point2.z);
+            m_vertices.push_back(lVertex2);
+            point2Index = m_vertices.size();
+        }
 
-        std::vector<GLfloat> lVertex3;
-        lVertex3.push_back(triangles[i].point3.x);
-        lVertex3.push_back(triangles[i].point3.y);
-        lVertex3.push_back(triangles[i].point3.z);
-        m_vertices.push_back(lVertex3);
+        if(point3Index == -1)
+        {
+            std::vector<GLfloat> lVertex3;
+            lVertex3.push_back(triangles[i].point3.x);
+            lVertex3.push_back(triangles[i].point3.y);
+            lVertex3.push_back(triangles[i].point3.z);
+            m_vertices.push_back(lVertex3);
+            point3Index = m_vertices.size();
+        }
 
         //add to face
         std::vector<unsigned int> newFace;
-        newFace.push_back(m_vertices.size() - 2);
-        newFace.push_back(m_vertices.size() - 1);
-        newFace.push_back(m_vertices.size() - 0);
+        newFace.push_back(point1Index);
+        newFace.push_back(point2Index);
+        newFace.push_back(point3Index);
         m_faces.push_back(newFace);
     }
 }
