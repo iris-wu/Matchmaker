@@ -270,27 +270,62 @@ glMeshSelectWidget::constraintPoint glMeshSelectWidget::CreateContraintPoint(int
     return newPoint;
 }
 
-void glMeshSelectWidget::FindEdges()
+void glMeshSelectWidget::AddEdgesAndTriangles()
 {
-    m_edges.clear();
-
     for ( unsigned int fIndex = 0; fIndex < m_faces.size(); ++fIndex )
     {
         std::vector<unsigned int> currentFace = m_faces[fIndex];
-        for ( unsigned int i = 0; i < 3; ++i )
-        {
-            unsigned int currentVertex = currentFace[i] - 1;
-            unsigned int neighborVertex = currentFace[(i+1)%3] - 1;
 
-            if ( currentVertex < neighborVertex )
-            {
-                m_edges.insert( std::make_pair( currentVertex, neighborVertex ) );
-            }
+        unsigned int v1 = currentFace[0] - 1;
+        unsigned int v2 = currentFace[1] - 1;
+        unsigned int v3 = currentFace[2] - 1;
+
+        triangle t;
+        t.vertexA = &(m_qVertices[v1]);
+        t.vertexB = &(m_qVertices[v2]);
+        t.vertexC = &(m_qVertices[v3]);
+
+        edge e1;
+        e1.vertexA = &(m_qVertices[v1]);
+        e1.vertexB = &(m_qVertices[v2]);
+
+        int index = FindEdgeIndex(e1);
+        if ( index == -1)
+        {
+            m_qEdges.push_back(e1);
+            index = m_qEdges.size() - 1;
         }
+        t.edgeA = &(m_qEdges[index]);
+
+        edge e2;
+        e2.vertexA = &(m_qVertices[v2]);
+        e2.vertexB = &(m_qVertices[v3]);
+
+        index = FindEdgeIndex(e2);
+        if ( index == -1)
+        {
+            m_qEdges.push_back(e2);
+            index = m_qEdges.size() - 1;
+        }
+        t.edgeB = &(m_qEdges[index]);
+
+        edge e3;
+        e3.vertexA = &(m_qVertices[v3]);
+        e3.vertexB = &(m_qVertices[v1]);
+
+        index = FindEdgeIndex(e3);
+        if ( index == -1)
+        {
+            m_qEdges.push_back(e3);
+            index = m_qEdges.size() - 1;
+        }
+        t.edgeC = &(m_qEdges[index]);
+
+        m_qTriangles.push_back(t);
     }
 
     // debug
-    printf("e: %d\n", (int)m_edges.size() );
+    //printf("v: %d, f: %d, e: %d\n", (int)m_qVertices.size(), (int)m_qTriangles.size(), (int)m_qEdges.size() );
 }
 
 void glMeshSelectWidget::parameterizeMesh()
@@ -311,6 +346,8 @@ void glMeshSelectWidget::parameterizeMesh()
 
     //add boundary mesh as well
     AddVirtualBoundary( edgePoints );
+
+    MakeNewStructure();
 
     // 3D points
     //m_vertices = m_originVertices;
@@ -435,7 +472,7 @@ void glMeshSelectWidget::AddVirtualBoundary( const std::set<unsigned int>& edgeP
 
     // get Delaunay triangles
     QVector<MathAlgorithms::Triangle> triangles = MathAlgorithms::getDelaunayTriangulation(fixedPoints, relativePoints);
-    printf("numOfTriangles: %d\n", (int)triangles.size());
+    //printf("numOfTriangles: %d\n", (int)triangles.size());
 
     //add border to faces and vertices
     for(int i = 0; i < triangles.size(); i++)
@@ -508,3 +545,48 @@ void glMeshSelectWidget::AddVirtualBoundary( const std::set<unsigned int>& edgeP
         m_faces.push_back(newFace);
     }
 }
+
+int glMeshSelectWidget::FindEdgeIndex(const edge &e)
+{
+    int index = -1;
+    for (unsigned int i = 0; i < m_qEdges.size(); ++i)
+    {
+        edge currentEdge = m_qEdges[i];
+        if ((currentEdge.vertexA == e.vertexA && currentEdge.vertexB == e.vertexB) || (currentEdge.vertexA == e.vertexB && currentEdge.vertexB == e.vertexA))
+        {
+            index = i;
+            break;
+        }
+    }
+    return index;
+}
+
+void glMeshSelectWidget::MakeNewStructure()
+{
+    for (unsigned int i = 0; i < m_vertices.size(); ++i)
+    {
+        vertex v;
+        v.x = m_vertices[i][0];
+        v.y = m_vertices[i][1];
+        v.z = m_vertices[i][2];
+        m_qVertices.push_back(v);
+    }
+
+    AddEdgesAndTriangles();
+}
+
+const QVector<glMeshSelectWidget::vertex>& glMeshSelectWidget::GetVertices() const
+{
+    return m_qVertices;
+}
+
+const QVector<glMeshSelectWidget::edge>& glMeshSelectWidget::GetEdges() const
+{
+    return m_qEdges;
+}
+
+const QVector<glMeshSelectWidget::triangle>& glMeshSelectWidget::GetTriangles() const
+{
+    return m_qTriangles;
+}
+

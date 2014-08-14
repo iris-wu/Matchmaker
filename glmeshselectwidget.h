@@ -25,11 +25,20 @@ class glMeshSelectWidget: public QGLWidget
         GLfloat z;
     };
 
+    struct edge
+    {
+        vertex* vertexA;
+        vertex* vertexB;
+    };
+
     struct triangle
     {
-        vertex vertexA;
-        vertex vertexB;
-        vertex vertexC;
+        vertex* vertexA;
+        vertex* vertexB;
+        vertex* vertexC;
+        edge* edgeA;
+        edge* edgeB;
+        edge* edgeC;
     };
 
     struct constraintPoint
@@ -49,7 +58,12 @@ public:
     //is called when a the user wants to load a different mesh file
     void loadMeshFileCallback(QTextStream* fileStream);
 
+    // called when the user wants to parameterize mesh
     void parameterizeMesh();
+
+    const QVector<vertex>& GetVertices() const;
+    const QVector<edge>& GetEdges() const;
+    const QVector<triangle>& GetTriangles() const;
 
 protected:
     void initializeGL(); //called once before drawing happens
@@ -60,14 +74,20 @@ protected:
 private:
 
     void DrawObject();
-    void FindEdges();
+    void AddEdgesAndTriangles();
+    int FindEdgeIndex(const edge& e);
 
     void RemoveFacesOutsideBoundary( std::set<unsigned int>& edgePoints );
     void AddVirtualBoundary( const std::set<unsigned int>& edgePoints );
+    void MakeNewStructure();
 
     void CreateBorder();
     constraintPoint CreateContraintPoint(int x, int y);
     std::vector<GLfloat> GetClosestVertex( GLfloat x, GLfloat y );
+
+    QVector<vertex> m_qVertices;
+    QVector<edge> m_qEdges;
+    QVector<triangle> m_qTriangles;
 
     std::vector< std::vector< GLfloat > > m_vertices;
     std::vector< std::vector< unsigned int > > m_faces;
@@ -85,7 +105,7 @@ private:
     std::vector< std::vector< GLfloat > > m_actualVTexture;     // orgin texture vertices + additional boundary points
     std::vector< std::vector< unsigned int > > m_actualFTexture;    // origin texture faces - texture faces cut
 
-    std::set< std::pair<unsigned int, unsigned int> > m_edges;
+    //std::set< std::pair<unsigned int, unsigned int> > m_edges;
 
     int m_widgetWidth;
     int m_widgetHeight;
