@@ -3,6 +3,7 @@
 #include "qimage.h"
 #include "qbuffer.h"
 #include "qbytearray.h"
+#include "mainwindow.h"
 
 glProgressWidget::glProgressWidget()
 {
@@ -43,4 +44,26 @@ void glProgressWidget::mousePressEvent(QMouseEvent* mouseEvent)
 {
     //redraw glWidget
     updateGL();
+}
+
+void glProgressWidget::addConstraintMatchAddVertexInMesh(MathAlgorithms::Vertex aVertex)
+{
+    glProgressWidget::ConstraintMatch newMatch;
+    newMatch.vertexInMesh = aVertex;
+    ConstraintMatches.append(newMatch);
+
+    //change flags for widgets
+    MainWindow::globalInstance->glMeshWidget->SetEnableConstraint(false);
+    MainWindow::globalInstance->glTextureWidget->SetEnableConstraint(true);
+    MainWindow::globalInstance->matchAction->setEnabled(false); //since we still need another vertex for texture
+}
+
+void glProgressWidget::addConstraintMatchAddVertexInTexture(MathAlgorithms::Vertex aVertex)
+{
+    ConstraintMatches[ConstraintMatches.size() - 1].vertexInTexture = aVertex;
+
+    //change flags for widgets
+    MainWindow::globalInstance->glMeshWidget->SetEnableConstraint(true);
+    MainWindow::globalInstance->glTextureWidget->SetEnableConstraint(false);
+    MainWindow::globalInstance->matchAction->setEnabled(true); //since we have a full set of pairs now
 }

@@ -50,6 +50,7 @@ public:
     void loadMeshFileCallback(QTextStream* fileStream);
 
     void parameterizeMesh();
+    void SetEnableConstraint(bool aValue);
 
 protected:
     void initializeGL(); //called once before drawing happens
@@ -95,6 +96,7 @@ private:
     std::vector< std::vector< GLfloat > > m_constraints;
 
     bool m_meshLoaded;
+    bool enableSetConstraint;
 };
 
 #endif // GLMESHSELECTWIDGET_H

@@ -56,6 +56,7 @@ public:
 
     void loadTextureFromFile(QString& fileName);
     void triangulatePoints();
+    void SetEnableConstraint(bool aValue);
 
 protected:
 
@@ -72,6 +73,7 @@ protected:
     int widgetWidth;
     int widgetHeight;
     bool textureLoaded;
+    bool enableSetConstraint;
     rectangle textureOfFace;
     GLuint textureId;
     constraintPoint borderConstraints [12];

@@ -5,10 +5,12 @@
 #include <cmath>
 #include <QFileDialog>
 #include <QMouseEvent>
+#include "mainwindow.h"
 
 glMeshSelectWidget::glMeshSelectWidget()
     : m_meshLoaded( false )
 {
+    enableSetConstraint = true;
 }
 
 glMeshSelectWidget::~glMeshSelectWidget()
@@ -86,7 +88,7 @@ void glMeshSelectWidget::resizeGL(int width, int height)
 
 void glMeshSelectWidget::mousePressEvent(QMouseEvent *event)
 {
-    if( m_meshLoaded )
+    if(m_meshLoaded && enableSetConstraint)
     {
         //coordinates in window coordinates
         float windowX = event->x();
@@ -123,6 +125,13 @@ void glMeshSelectWidget::mousePressEvent(QMouseEvent *event)
         newPoint.rightTop.z = 0;
 
         m_userConstraints.push_back(newPoint);
+
+        MathAlgorithms::Vertex constraintVertex;
+        constraintVertex.x = vXLocation;
+        constraintVertex.y = vYLocation;
+        constraintVertex.z = 0;
+
+        MainWindow::globalInstance->progressWidget->addConstraintMatchAddVertexInMesh(constraintVertex);
     }
 
     //redraw glWidget
@@ -507,4 +516,9 @@ void glMeshSelectWidget::AddVirtualBoundary( const std::set<unsigned int>& edgeP
         newFace.push_back(point3Index);
         m_faces.push_back(newFace);
     }
+}
+
+void glMeshSelectWidget::SetEnableConstraint(bool aValue)
+{
+   enableSetConstraint = aValue;
 }

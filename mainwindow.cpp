@@ -2,6 +2,8 @@
 #include <QFileDialog>
 #include <QTextStream>
 
+MainWindow* MainWindow::globalInstance = 0;
+
 MainWindow::MainWindow()
 {
     //create widget that is directly used by the window
@@ -81,6 +83,10 @@ MainWindow::MainWindow()
     connect(triangulateTextureAction, SIGNAL(triggered()), this, SLOT(SLOT_TriangulateTexture()));
     triangulateTextureAction->setEnabled(false);
 
+    matchAction = new QAction(tr("Match"), this);
+    connect(matchAction, SIGNAL(triggered()), this, SLOT(SLOT_Match()));
+    matchAction->setEnabled(false);
+
     //Add actions to menus
     //fileMenu
     fileMenu->addAction(loadMeshFileAction);
@@ -88,10 +94,14 @@ MainWindow::MainWindow()
     //actionMenu
     actionMenu->addAction(meshParameterizationAction);
     actionMenu->addAction(triangulateTextureAction);
+    actionMenu->addAction(matchAction);
 
     //set title and size of window
     setWindowTitle(tr(WINDOW_TITLE));
     resize(WINDOW_SIZE_WIDTH, WINDOW_SIZE_HEIGHT);
+
+    //all done set global pointer
+    MainWindow::globalInstance = this;
 }
 
 MainWindow::~MainWindow()
@@ -152,4 +162,13 @@ void MainWindow::SLOT_TriangulateTexture()
 {
     glTextureWidget->makeCurrent();
     glTextureWidget->triangulatePoints();
+}
+
+void MainWindow::SLOT_Match()
+{
+    //just in case triangulate since user might have called match without triangulating it first
+    glTextureWidget->makeCurrent();
+    glTextureWidget->triangulatePoints();
+
+    //do nothing for now
 }

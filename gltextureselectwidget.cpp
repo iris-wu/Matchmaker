@@ -3,6 +3,7 @@
 #include "qimage.h"
 #include "qbuffer.h"
 #include "qbytearray.h"
+#include "mainwindow.h"
 
 glTextureSelectWidget::glTextureSelectWidget()
 {
@@ -31,6 +32,7 @@ glTextureSelectWidget::glTextureSelectWidget()
     textureOfFace.vertexDTex.t = 1;
 
     textureLoaded = false;
+    enableSetConstraint = false;
 }
 
 glTextureSelectWidget::~glTextureSelectWidget()
@@ -129,10 +131,17 @@ void glTextureSelectWidget::resizeGL(int width, int height)
 
 void glTextureSelectWidget::mousePressEvent(QMouseEvent* mouseEvent)
 {
-    if(textureLoaded)
+    if(textureLoaded && enableSetConstraint)
     {
          glTextureSelectWidget::constraintPoint point = createContraintPoint(mouseEvent->x(), mouseEvent->y());
          userConstraints.push_back(point);
+
+         MathAlgorithms::Vertex constraintVertex;
+         constraintVertex.x = point.leftBottom.x + GL_TEXTUREWIDGET_CONSTRAINT_SIZE;
+         constraintVertex.y = point.leftBottom.y + GL_TEXTUREWIDGET_CONSTRAINT_SIZE;
+         constraintVertex.z = 0;
+
+         MainWindow::globalInstance->progressWidget->addConstraintMatchAddVertexInTexture(constraintVertex);
     }
 
     //redraw glWidget
@@ -262,4 +271,9 @@ void glTextureSelectWidget::triangulatePoints()
 
     //redraw glWidget
     updateGL();
+}
+
+void glTextureSelectWidget::SetEnableConstraint(bool aValue)
+{
+   enableSetConstraint = aValue;
 }
