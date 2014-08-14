@@ -60,6 +60,7 @@ public:
 
     // called when the user wants to parameterize mesh
     void parameterizeMesh();
+    void SetEnableConstraint(bool aValue);
 
     const QVector<vertex>& GetVertices() const;
     const QVector<edge>& GetEdges() const;
@@ -115,6 +116,7 @@ private:
     std::vector< std::vector< GLfloat > > m_constraints;
 
     bool m_meshLoaded;
+    bool enableSetConstraint;
 };
 
 #endif // GLMESHSELECTWIDGET_H
