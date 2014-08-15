@@ -192,8 +192,6 @@ void glMeshSelectWidget::loadMeshFileCallback(QTextStream* fileStream)
     m_originVertices = m_vertices;
     m_originFaces = m_faces;
 
-    //FindEdges();
-
     updateGL();
 }
 
@@ -380,7 +378,7 @@ std::vector<GLfloat> glMeshSelectWidget::GetClosestVertex( GLfloat x, GLfloat y 
     for( unsigned int i = 0; i < m_vertices.size(); ++i )
     {
         std::vector<GLfloat> currentVertex = m_vertices[i];
-        if ( (currentVertex[0] < -75 || currentVertex[0] > 75) || (currentVertex[1] < 0 || currentVertex[1] > 150) )
+        if ( (currentVertex[0] < -70 || currentVertex[0] > 70) || (currentVertex[1] < 5 || currentVertex[1] > 145) )
         {
             continue;
         }
@@ -434,14 +432,6 @@ void glMeshSelectWidget::RemoveFacesOutsideBoundary(std::set<unsigned int>& edge
             }
         }
     }
-
-    // debug
-    //printf("neighbors: %d\n", (int)neighborsOfRemovedVertices.size() );
-    /*for ( std::set<unsigned int>::iterator itr = neighborsOfRemovedVertices.begin(); itr != neighborsOfRemovedVertices.end(); ++itr )
-    {
-        unsigned int currentIndex = *itr - 1;
-        m_borderPoints.push_back( CreateContraintPoint( m_vTexture[currentIndex][0], m_vTexture[currentIndex][1] ) );
-    }*/
 }
 
 void glMeshSelectWidget::AddVirtualBoundary( const std::set<unsigned int>& edgePoints )
