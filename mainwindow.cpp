@@ -170,5 +170,7 @@ void MainWindow::SLOT_Match()
     glTextureWidget->makeCurrent();
     glTextureWidget->triangulatePoints();
 
-    //do nothing for now
+    //do matching
+    progressWidget->makeCurrent();
+    progressWidget->performMatch();
 }

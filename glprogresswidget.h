@@ -17,6 +17,7 @@ class glProgressWidget : public QGLWidget
 public:
     glProgressWidget();
     ~glProgressWidget();
+    void performMatch();
 
     void addConstraintMatchAddVertexInMesh(MathAlgorithms::Vertex aVertex);
     void addConstraintMatchAddVertexInTexture(MathAlgorithms::Vertex aVertex);

@@ -4,6 +4,7 @@
 #include <QGLWidget>
 #include <QVector>
 #include "mathalgorithms.h"
+#include "glmeshselectwidget.h"
 
 #define GL_TEXTUREWIDGET_CANVAS_WIDTH 100
 #define GL_TEXTUREWIDGET_CANVAS_HEIGHT 100
@@ -58,6 +59,11 @@ public:
     void triangulatePoints();
     void SetEnableConstraint(bool aValue);
 
+
+    QVector<glMeshSelectWidget::vertex*>& GetVertices();
+    QVector<glMeshSelectWidget::edge*>& GetEdges();
+    QVector<glMeshSelectWidget::triangle*>& GetTriangles();
+
 protected:
 
     //default widget gl functions
@@ -68,6 +74,8 @@ protected:
 
     //creates a constraintPoint given the X and Y vertex coordinates relative to the widget
     constraintPoint createContraintPoint(int x, int y);
+    //create data structers used by Match function
+    void buildStructers();
 
 
     int widgetWidth;
@@ -79,6 +87,11 @@ protected:
     constraintPoint borderConstraints [12];
     QVector<constraintPoint> userConstraints;
     QVector<MathAlgorithms::Triangle> triangulatedConstraints;
+
+    //data structers used for matching, creating during triangulation
+    QVector<glMeshSelectWidget::vertex*> triangulatedVertexes;
+    QVector<glMeshSelectWidget::edge*> triangulatedEdges;
+    QVector<glMeshSelectWidget::triangle*> triangulatedTriangles;
 };
 
 #endif // GLTEXTURESELECTWIDGET_H

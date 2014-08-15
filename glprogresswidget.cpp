@@ -67,3 +67,16 @@ void glProgressWidget::addConstraintMatchAddVertexInTexture(MathAlgorithms::Vert
     MainWindow::globalInstance->glTextureWidget->SetEnableConstraint(false);
     MainWindow::globalInstance->matchAction->setEnabled(true); //since we have a full set of pairs now
 }
+
+void glProgressWidget::performMatch()
+{
+    //need to get edges, vertices and triangles from Mesh
+    QVector<glMeshSelectWidget::vertex*>& meshVertices = MainWindow::globalInstance->glMeshWidget->GetVertices();
+    QVector<glMeshSelectWidget::edge*>& meshEdges = MainWindow::globalInstance->glMeshWidget->GetEdges();
+    QVector<glMeshSelectWidget::triangle*>& meshTriangles = MainWindow::globalInstance->glMeshWidget->GetTriangles();
+
+    //need to get edges, vertices and triangles from Mesh
+    QVector<glMeshSelectWidget::vertex*>& textureVertices = MainWindow::globalInstance->glTextureWidget->GetVertices();
+    QVector<glMeshSelectWidget::edge*>& textureEdges = MainWindow::globalInstance->glTextureWidget->GetEdges();
+    QVector<glMeshSelectWidget::triangle*>& textureTriangles = MainWindow::globalInstance->glTextureWidget->GetTriangles();
+}

@@ -87,7 +87,7 @@ void glMeshSelectWidget::resizeGL(int width, int height)
 }
 
 void glMeshSelectWidget::mousePressEvent(QMouseEvent *event)
-{
+{   
     if(m_meshLoaded && enableSetConstraint)
     {
         //coordinates in window coordinates
@@ -135,6 +135,7 @@ void glMeshSelectWidget::mousePressEvent(QMouseEvent *event)
     }
 
     //redraw glWidget
+    this->makeCurrent();
     updateGL();
 }
 
@@ -287,70 +288,73 @@ void glMeshSelectWidget::AddEdgesAndTriangles()
         unsigned int v2 = currentFace[1] - 1;
         unsigned int v3 = currentFace[2] - 1;
 
-        triangle t;
-        t.vertexA = &(m_qVertices[v1]);
-        t.vertexB = &(m_qVertices[v2]);
-        t.vertexC = &(m_qVertices[v3]);      
+        triangle* t = new triangle;
+        t->vertexA = m_qVertices[v1];
+        t->vertexB = m_qVertices[v2];
+        t->vertexC = m_qVertices[v3];
 
-        edge e1;
-        e1.vertexA = &(m_qVertices[v1]);
-        e1.vertexB = &(m_qVertices[v2]);
+        edge* e1 = new edge;
+        e1->vertexA = m_qVertices[v1];
+        e1->vertexB = m_qVertices[v2];
 
-        int index = FindEdgeIndex(e1);
+        int index = FindEdgeIndex(*e1);
         if ( index == -1)
         {
             m_qEdges.push_back(e1);
             index = m_qEdges.size() - 1;
+            //e1->triangleIndicies = new QVector<int>;
 
             //is new edge, need to add it to the verticies as well
-            m_qVertices[v1].edgeIndicies.append(index);
-            m_qVertices[v2].edgeIndicies.append(index);
+            t->vertexA->edgeIndicies.append(index);
+            t->vertexB->edgeIndicies.append(index);
         }
-        t.edgeA = &(m_qEdges[index]);
+        t->edgeA = m_qEdges[index];
 
-        edge e2;
-        e2.vertexA = &(m_qVertices[v2]);
-        e2.vertexB = &(m_qVertices[v3]);
+        edge* e2 = new edge;
+        e2->vertexA = m_qVertices[v2];
+        e2->vertexB = m_qVertices[v3];
 
-        index = FindEdgeIndex(e2);
+        index = FindEdgeIndex(*e2);
         if ( index == -1)
         {
             m_qEdges.push_back(e2);
             index = m_qEdges.size() - 1;
+            //e2->triangleIndicies = new QVector<int>;
 
             //is new edge, need to add it to the verticies as well
-            m_qVertices[v2].edgeIndicies.append(index);
-            m_qVertices[v3].edgeIndicies.append(index);
+            t->vertexB->edgeIndicies.append(index);
+            t->vertexC->edgeIndicies.append(index);
         }
-        t.edgeB = &(m_qEdges[index]);
+        t->edgeB = m_qEdges[index];
 
-        edge e3;
-        e3.vertexA = &(m_qVertices[v3]);
-        e3.vertexB = &(m_qVertices[v1]);
+        edge* e3 = new edge;
+        e3->vertexA = m_qVertices[v3];
+        e3->vertexB = m_qVertices[v1];
 
-        index = FindEdgeIndex(e3);
+        index = FindEdgeIndex(*e3);
         if ( index == -1)
         {
             m_qEdges.push_back(e3);
             index = m_qEdges.size() - 1;
+            //e3->triangleIndicies = new QVector<int>;
 
             //is new edge, need to add it to the verticies as well
-            m_qVertices[v1].edgeIndicies.append(index);
-            m_qVertices[v3].edgeIndicies.append(index);
+            t->vertexA->edgeIndicies.append(index);
+            t->vertexC->edgeIndicies.append(index);
         }
-        t.edgeC = &(m_qEdges[index]);
+        t->edgeC = m_qEdges[index];
 
         m_qTriangles.push_back(t);
 
         //update edges to point to this triangle
-        t.edgeA->triangleIndicies.append(m_qTriangles.size() - 1);
-        t.edgeB->triangleIndicies.append(m_qTriangles.size() - 1);
-        t.edgeC->triangleIndicies.append(m_qTriangles.size() - 1);
+        t->edgeA->triangleIndicies.append(m_qTriangles.size() - 1);
+        t->edgeB->triangleIndicies.append(m_qTriangles.size() - 1);
+        t->edgeC->triangleIndicies.append(m_qTriangles.size() - 1);
 
         //need to update vertices to point to triangle
-        m_qVertices[v1].triangleIndicies.append(m_qTriangles.size() - 1);
-        m_qVertices[v2].triangleIndicies.append(m_qTriangles.size() - 1);
-        m_qVertices[v3].triangleIndicies.append(m_qTriangles.size() - 1);
+        t->vertexA->triangleIndicies.append(m_qTriangles.size() - 1);
+        t->vertexB->triangleIndicies.append(m_qTriangles.size() - 1);
+        t->vertexC->triangleIndicies.append(m_qTriangles.size() - 1);
     }
 
     // debug
@@ -572,7 +576,7 @@ int glMeshSelectWidget::FindEdgeIndex(const edge &e)
     int index = -1;
     for (unsigned int i = 0; i < m_qEdges.size(); ++i)
     {
-        edge currentEdge = m_qEdges[i];
+        edge& currentEdge = *m_qEdges[i];
         if ((currentEdge.vertexA == e.vertexA && currentEdge.vertexB == e.vertexB) || (currentEdge.vertexA == e.vertexB && currentEdge.vertexB == e.vertexA))
         {
             index = i;
@@ -586,27 +590,29 @@ void glMeshSelectWidget::MakeNewStructure()
 {
     for (unsigned int i = 0; i < m_vertices.size(); ++i)
     {
-        vertex v;
-        v.x = m_vertices[i][0];
-        v.y = m_vertices[i][1];
-        v.z = m_vertices[i][2];
+        vertex* v = new vertex;
+        v->x = m_vertices[i][0];
+        v->y = m_vertices[i][1];
+        v->z = m_vertices[i][2];
+        //v->edgeIndicies = new QVector<int>;
+       // v->triangleIndicies = new QVector<int>;
         m_qVertices.push_back(v);
     }
 
     AddEdgesAndTriangles();
 }
 
-QVector<glMeshSelectWidget::vertex>& glMeshSelectWidget::GetVertices()
+QVector<glMeshSelectWidget::vertex*>& glMeshSelectWidget::GetVertices()
 {
     return m_qVertices;
 }
 
-QVector<glMeshSelectWidget::edge>& glMeshSelectWidget::GetEdges()
+QVector<glMeshSelectWidget::edge*>& glMeshSelectWidget::GetEdges()
 {
     return m_qEdges;
 }
 
-QVector<glMeshSelectWidget::triangle>& glMeshSelectWidget::GetTriangles()
+QVector<glMeshSelectWidget::triangle*>& glMeshSelectWidget::GetTriangles()
 {
     return m_qTriangles;
 }

@@ -20,6 +20,7 @@ class glMeshSelectWidget: public QGLWidget
 
 public:
 
+public:
     struct vertex
     {
         GLfloat x;
@@ -46,16 +47,9 @@ public:
         edge* edgeC;
     };
 
-    struct constraintPoint
-    {
-        int pixelXLocation;
-        int pixelYLocation;
-        vertex rightBottom;
-        vertex rightTop;
-        vertex leftBottom;
-        vertex leftTop;
-    };
 
+
+public:
     glMeshSelectWidget();
     ~glMeshSelectWidget();
 
@@ -66,9 +60,9 @@ public:
     void parameterizeMesh();
     void SetEnableConstraint(bool aValue);
 
-    QVector<vertex>& GetVertices();
-    QVector<edge>& GetEdges();
-    QVector<triangle>& GetTriangles();
+    QVector<vertex*>& GetVertices();
+    QVector<edge*>& GetEdges();
+    QVector<triangle*>& GetTriangles();
 
 protected:
     void initializeGL(); //called once before drawing happens
@@ -77,6 +71,23 @@ protected:
     void mousePressEvent(QMouseEvent *event); //when mouse is pressed inside the area
 
 private:
+
+    struct constraintVertex
+    {
+        GLfloat x;
+        GLfloat y;
+        GLfloat z;
+    };
+
+    struct constraintPoint
+    {
+        int pixelXLocation;
+        int pixelYLocation;
+        constraintVertex rightBottom;
+        constraintVertex rightTop;
+        constraintVertex leftBottom;
+        constraintVertex leftTop;
+    };
 
     void DrawObject();
     void AddEdgesAndTriangles();
@@ -90,9 +101,9 @@ private:
     constraintPoint CreateContraintPoint(int x, int y);
     std::vector<GLfloat> GetClosestVertex( GLfloat x, GLfloat y );
 
-    QVector<vertex> m_qVertices;
-    QVector<edge> m_qEdges;
-    QVector<triangle> m_qTriangles;
+    QVector<vertex*> m_qVertices;
+    QVector<edge*> m_qEdges;
+    QVector<triangle*> m_qTriangles;
 
     std::vector< std::vector< GLfloat > > m_vertices;
     std::vector< std::vector< unsigned int > > m_faces;

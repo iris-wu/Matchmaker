@@ -269,6 +269,8 @@ void glTextureSelectWidget::triangulatePoints()
 
     triangulatedConstraints = MathAlgorithms::getDelaunayTriangulation(points);
 
+    buildStructers();
+
     //redraw glWidget
     updateGL();
 }
@@ -276,4 +278,181 @@ void glTextureSelectWidget::triangulatePoints()
 void glTextureSelectWidget::SetEnableConstraint(bool aValue)
 {
    enableSetConstraint = aValue;
+}
+
+QVector<glMeshSelectWidget::vertex*>& glTextureSelectWidget::GetVertices()
+{
+    return triangulatedVertexes;
+}
+
+QVector<glMeshSelectWidget::edge*>& glTextureSelectWidget::GetEdges()
+{
+    return triangulatedEdges;
+}
+
+QVector<glMeshSelectWidget::triangle*>& glTextureSelectWidget::GetTriangles()
+{
+    return triangulatedTriangles;
+}
+
+void glTextureSelectWidget::buildStructers()
+{
+    //reset structers first
+    triangulatedTriangles.clear();
+    triangulatedEdges.clear();
+    triangulatedVertexes.clear();
+
+    for (int i = 0; i < triangulatedConstraints.size(); i++ )
+    {
+        MathAlgorithms::Triangle currentTriangle = triangulatedConstraints[i];
+        glMeshSelectWidget::triangle* matchTriangle = new glMeshSelectWidget::triangle;
+        glMeshSelectWidget::vertex* matchVertexA = 0;
+        glMeshSelectWidget::vertex* matchVertexB = 0;
+        glMeshSelectWidget::vertex* matchVertexC = 0;
+
+        //check if verticies are already in list or not
+        for(int vertexIndex = 0; vertexIndex < triangulatedVertexes.size(); vertexIndex++)
+        {
+           if(currentTriangle.point1.x == triangulatedVertexes[vertexIndex]->x
+           && currentTriangle.point1.y == triangulatedVertexes[vertexIndex]->y
+           && currentTriangle.point1.z == triangulatedVertexes[vertexIndex]->z)
+           {
+              matchVertexA = triangulatedVertexes[vertexIndex];
+              break;
+           }
+        }
+        for(int vertexIndex = 0; vertexIndex < triangulatedVertexes.size(); vertexIndex++)
+        {
+           if(currentTriangle.point2.x == triangulatedVertexes[vertexIndex]->x
+           && currentTriangle.point2.y == triangulatedVertexes[vertexIndex]->y
+           && currentTriangle.point2.z == triangulatedVertexes[vertexIndex]->z)
+           {
+              matchVertexB = triangulatedVertexes[vertexIndex];
+              break;
+           }
+        }
+        for(int vertexIndex = 0; vertexIndex < triangulatedVertexes.size(); vertexIndex++)
+        {
+           if(currentTriangle.point3.x == triangulatedVertexes[vertexIndex]->x
+           && currentTriangle.point3.y == triangulatedVertexes[vertexIndex]->y
+           && currentTriangle.point3.z == triangulatedVertexes[vertexIndex]->z)
+           {
+              matchVertexC = triangulatedVertexes[vertexIndex];
+              break;
+           }
+        }
+        if(matchVertexA == 0)
+        {
+            //need to create a new one
+             glMeshSelectWidget::vertex* matchVertex = new glMeshSelectWidget::vertex;
+             matchVertex->x = currentTriangle.point1.x;
+             matchVertex->y = currentTriangle.point1.y;
+             matchVertex->z = currentTriangle.point1.z;
+             triangulatedVertexes.append(matchVertex);
+
+             matchVertexA = triangulatedVertexes[triangulatedVertexes.size() - 1]; //need reference to it
+        }
+        if(matchVertexB == 0)
+        {
+            //need to create a new one
+             glMeshSelectWidget::vertex* matchVertex = new glMeshSelectWidget::vertex;
+             matchVertex->x = currentTriangle.point2.x;
+             matchVertex->y = currentTriangle.point2.y;
+             matchVertex->z = currentTriangle.point2.z;
+             triangulatedVertexes.append(matchVertex);
+
+             matchVertexB = triangulatedVertexes[triangulatedVertexes.size() - 1]; //need reference to it
+        }
+        if(matchVertexC == 0)
+        {
+            //need to create a new one
+             glMeshSelectWidget::vertex* matchVertex = new glMeshSelectWidget::vertex;
+             matchVertex->x = currentTriangle.point3.x;
+             matchVertex->y = currentTriangle.point3.y;
+             matchVertex->z = currentTriangle.point3.z;
+             triangulatedVertexes.append(matchVertex);
+
+             matchVertexC = triangulatedVertexes[triangulatedVertexes.size() - 1]; //need reference to it
+        }
+
+        //create or find edges
+        glMeshSelectWidget::edge* matchEdgeA = 0;
+        glMeshSelectWidget::edge* matchEdgeB = 0;
+        glMeshSelectWidget::edge* matchEdgeC = 0;
+        //edge is made up by vertexA and vertex B, check if vertexA has already this edge, if it has the edge is already in the edge list
+        for(int edgeIndex = 0; edgeIndex < matchVertexA->edgeIndicies.size(); edgeIndex++)
+        {
+            if((triangulatedEdges[(matchVertexA->edgeIndicies[edgeIndex])]->vertexA == matchVertexA || triangulatedEdges[(matchVertexA->edgeIndicies[edgeIndex])]->vertexB == matchVertexA)
+            && (triangulatedEdges[matchVertexA->edgeIndicies[edgeIndex]]->vertexA == matchVertexB || triangulatedEdges[matchVertexA->edgeIndicies[edgeIndex]]->vertexB == matchVertexB))
+            {
+                matchEdgeA = triangulatedEdges[matchVertexA->edgeIndicies[edgeIndex]];
+            }
+        }
+        for(int edgeIndex = 0; edgeIndex < matchVertexB->edgeIndicies.size(); edgeIndex++)
+        {
+            if((triangulatedEdges[matchVertexB->edgeIndicies[edgeIndex]]->vertexA == matchVertexB || triangulatedEdges[matchVertexB->edgeIndicies[edgeIndex]]->vertexB == matchVertexB)
+            && (triangulatedEdges[matchVertexB->edgeIndicies[edgeIndex]]->vertexA == matchVertexC || triangulatedEdges[matchVertexB->edgeIndicies[edgeIndex]]->vertexB == matchVertexC))
+            {
+                matchEdgeB = triangulatedEdges[matchVertexB->edgeIndicies[edgeIndex]];
+            }
+        }
+        for(int edgeIndex = 0; edgeIndex < matchVertexC->edgeIndicies.size(); edgeIndex++)
+        {
+            if((triangulatedEdges[matchVertexC->edgeIndicies[edgeIndex]]->vertexA == matchVertexC || triangulatedEdges[matchVertexC->edgeIndicies[edgeIndex]]->vertexB == matchVertexC)
+            && (triangulatedEdges[matchVertexC->edgeIndicies[edgeIndex]]->vertexA == matchVertexA || triangulatedEdges[matchVertexC->edgeIndicies[edgeIndex]]->vertexB == matchVertexA))
+            {
+                matchEdgeC = triangulatedEdges[matchVertexC->edgeIndicies[edgeIndex]];
+            }
+        }
+        if(matchEdgeA == 0)
+        {
+            //need to create a new one
+             glMeshSelectWidget::edge* matchEdge = new glMeshSelectWidget::edge;
+             matchEdge->vertexA = matchVertexA;
+             matchEdge->vertexB = matchVertexB;
+             triangulatedEdges.append(matchEdge);
+
+             matchEdgeA = triangulatedEdges[triangulatedEdges.size() - 1]; //need reference to it
+        }
+        if(matchEdgeB == 0)
+        {
+            //need to create a new one
+             glMeshSelectWidget::edge* matchEdge = new glMeshSelectWidget::edge;
+             matchEdge->vertexA = matchVertexB;
+             matchEdge->vertexB = matchVertexC;
+             triangulatedEdges.append(matchEdge);
+
+             matchEdgeB = triangulatedEdges[triangulatedEdges.size() - 1]; //need reference to it
+        }
+        if(matchEdgeC == 0)
+        {
+            //need to create a new one
+             glMeshSelectWidget::edge* matchEdge = new glMeshSelectWidget::edge;
+             matchEdge->vertexA = matchVertexA;
+             matchEdge->vertexB = matchVertexC;
+             triangulatedEdges.append(matchEdge);
+
+             matchEdgeC = triangulatedEdges[triangulatedEdges.size() - 1]; //need reference to it
+        }
+
+        //update triangle since we have data now
+        matchTriangle->edgeA = matchEdgeA;
+        matchTriangle->edgeB = matchEdgeB;
+        matchTriangle->edgeC = matchEdgeC;
+        matchTriangle->vertexA = matchVertexA;
+        matchTriangle->vertexB = matchVertexB;
+        matchTriangle->vertexC = matchVertexC;
+
+        triangulatedTriangles.append(matchTriangle);
+
+        //update edges to point to this triangle
+        matchEdgeA->triangleIndicies.append(triangulatedTriangles.size() - 1);
+        matchEdgeB->triangleIndicies.append(triangulatedTriangles.size() - 1);
+        matchEdgeC->triangleIndicies.append(triangulatedTriangles.size() - 1);
+
+        //need to update vertices to point to triangle
+        matchVertexA->triangleIndicies.append(triangulatedTriangles.size() - 1);
+        matchVertexB->triangleIndicies.append(triangulatedTriangles.size() - 1);
+        matchVertexC->triangleIndicies.append(triangulatedTriangles.size() - 1);
+    }
 }
