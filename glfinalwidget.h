@@ -12,6 +12,8 @@ public:
     glFinalWidget();
     ~glFinalWidget();
 
+    void performEmbed();
+
 protected:
 
     //default widget gl functions

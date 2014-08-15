@@ -87,6 +87,10 @@ MainWindow::MainWindow()
     connect(matchAction, SIGNAL(triggered()), this, SLOT(SLOT_Match()));
     matchAction->setEnabled(false);
 
+    embedAction = new QAction(tr("Embed"), this);
+    connect(embedAction, SIGNAL(triggered()), this, SLOT(SLOT_Embed()));
+    embedAction->setEnabled(false);
+
     //Add actions to menus
     //fileMenu
     fileMenu->addAction(loadMeshFileAction);
@@ -173,4 +177,10 @@ void MainWindow::SLOT_Match()
     //do matching
     progressWidget->makeCurrent();
     progressWidget->performMatch();
+}
+
+void MainWindow::SLOT_Embed()
+{
+    finalWidget->makeCurrent();
+    finalWidget->performEmbed();
 }

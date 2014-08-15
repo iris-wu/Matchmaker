@@ -26,6 +26,7 @@ public:
     glProgressWidget* progressWidget;
     glFinalWidget* finalWidget;
     QAction* matchAction; //want this public, so that widgets can enable and disable it dependent on state
+    QAction* embedAction;
 
 private slots:
     void SLOT_loadMeshFile();
@@ -33,6 +34,7 @@ private slots:
     void SLOT_ParameterizeMesh();
     void SLOT_TriangulateTexture();
     void SLOT_Match();
+    void SLOT_Embed();
 
 protected:
     QWidget* mainWidget; //contains basically all layout elements, can be considered the frame of the window

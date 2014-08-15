@@ -30,12 +30,29 @@ void glFinalWidget::paintGL()
 
     glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
 
-    glColor3f(0.5f, 0.0f, 0.5f);
-
+    // Draw mesh
+    glColor3f(0.0f, 1.0f, 0.0f);
     glBegin( GL_TRIANGLES );
     for ( int i = 0; i < m_qTriangles.size(); ++i )
     {
         glMeshSelectWidget::triangle t = m_qTriangles[i];
+        glMeshSelectWidget::vertex a, b, c;
+        a = *(t.vertexA);
+        b = *(t.vertexB);
+        c = *(t.vertexC);
+
+        glVertex3f(a.x, a.y, a.z);
+        glVertex3f(b.x, b.y, b.z);
+        glVertex3f(c.x, c.y, c.z);
+    }
+    glEnd();
+
+    // Draw path
+    glColor3f(0.5f, 0.0f, 0.5f);
+    glBegin(GL_TRIANGLES);
+    for (int i = 0; i < m_constriants.size(); ++i)
+    {
+        glMeshSelectWidget::triangle t = m_constriants[cIndex];
         glMeshSelectWidget::vertex a, b, c;
         a = *(t.vertexA);
         b = *(t.vertexB);
@@ -65,6 +82,17 @@ void glFinalWidget::resizeGL(int width, int height)
 void glFinalWidget::mousePressEvent(QMouseEvent* mouseEvent)
 {
     //redraw glWidget
+    updateGL();
+}
+
+void glFinalWidget::performEmbed()
+{
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    glOrtho(-75, 75, 0, 150, -90, 160);
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
+
     updateGL();
 }
 
@@ -141,12 +169,4 @@ void glFinalWidget::Reposition()
             }
         }
     }
-
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
-    glOrtho(-75, 75, 0, 150, -90, 160);
-    glMatrixMode(GL_MODELVIEW);
-    glLoadIdentity();
-
-    updateGL();
 }
