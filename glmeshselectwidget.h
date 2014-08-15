@@ -16,8 +16,10 @@
 #define GL_MESHWIDGET_CONSTRAINT_SIZE 1
 
 class glMeshSelectWidget: public QGLWidget
-
 {
+
+public:
+
     struct vertex
     {
         GLfloat x;
@@ -54,7 +56,6 @@ class glMeshSelectWidget: public QGLWidget
         vertex leftTop;
     };
 
-public:
     glMeshSelectWidget();
     ~glMeshSelectWidget();
 
