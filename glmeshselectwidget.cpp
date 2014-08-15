@@ -290,7 +290,7 @@ void glMeshSelectWidget::AddEdgesAndTriangles()
         triangle t;
         t.vertexA = &(m_qVertices[v1]);
         t.vertexB = &(m_qVertices[v2]);
-        t.vertexC = &(m_qVertices[v3]);
+        t.vertexC = &(m_qVertices[v3]);      
 
         edge e1;
         e1.vertexA = &(m_qVertices[v1]);
@@ -301,6 +301,10 @@ void glMeshSelectWidget::AddEdgesAndTriangles()
         {
             m_qEdges.push_back(e1);
             index = m_qEdges.size() - 1;
+
+            //is new edge, need to add it to the verticies as well
+            m_qVertices[v1].edgeIndicies.append(index);
+            m_qVertices[v2].edgeIndicies.append(index);
         }
         t.edgeA = &(m_qEdges[index]);
 
@@ -313,6 +317,10 @@ void glMeshSelectWidget::AddEdgesAndTriangles()
         {
             m_qEdges.push_back(e2);
             index = m_qEdges.size() - 1;
+
+            //is new edge, need to add it to the verticies as well
+            m_qVertices[v2].edgeIndicies.append(index);
+            m_qVertices[v3].edgeIndicies.append(index);
         }
         t.edgeB = &(m_qEdges[index]);
 
@@ -325,10 +333,24 @@ void glMeshSelectWidget::AddEdgesAndTriangles()
         {
             m_qEdges.push_back(e3);
             index = m_qEdges.size() - 1;
+
+            //is new edge, need to add it to the verticies as well
+            m_qVertices[v1].edgeIndicies.append(index);
+            m_qVertices[v3].edgeIndicies.append(index);
         }
         t.edgeC = &(m_qEdges[index]);
 
         m_qTriangles.push_back(t);
+
+        //update edges to point to this triangle
+        t.edgeA->triangleIndicies.append(m_qTriangles.size() - 1);
+        t.edgeB->triangleIndicies.append(m_qTriangles.size() - 1);
+        t.edgeC->triangleIndicies.append(m_qTriangles.size() - 1);
+
+        //need to update vertices to point to triangle
+        m_qVertices[v1].triangleIndicies.append(m_qTriangles.size() - 1);
+        m_qVertices[v2].triangleIndicies.append(m_qTriangles.size() - 1);
+        m_qVertices[v3].triangleIndicies.append(m_qTriangles.size() - 1);
     }
 
     // debug
@@ -574,17 +596,17 @@ void glMeshSelectWidget::MakeNewStructure()
     AddEdgesAndTriangles();
 }
 
-const QVector<glMeshSelectWidget::vertex>& glMeshSelectWidget::GetVertices() const
+QVector<glMeshSelectWidget::vertex>& glMeshSelectWidget::GetVertices()
 {
     return m_qVertices;
 }
 
-const QVector<glMeshSelectWidget::edge>& glMeshSelectWidget::GetEdges() const
+QVector<glMeshSelectWidget::edge>& glMeshSelectWidget::GetEdges()
 {
     return m_qEdges;
 }
 
-const QVector<glMeshSelectWidget::triangle>& glMeshSelectWidget::GetTriangles() const
+QVector<glMeshSelectWidget::triangle>& glMeshSelectWidget::GetTriangles()
 {
     return m_qTriangles;
 }

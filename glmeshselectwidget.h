@@ -23,12 +23,15 @@ class glMeshSelectWidget: public QGLWidget
         GLfloat x;
         GLfloat y;
         GLfloat z;
+        QVector<int> edgeIndicies;
+        QVector<int> triangleIndicies;
     };
 
     struct edge
     {
         vertex* vertexA;
         vertex* vertexB;
+        QVector<int> triangleIndicies;
     };
 
     struct triangle
@@ -62,9 +65,9 @@ public:
     void parameterizeMesh();
     void SetEnableConstraint(bool aValue);
 
-    const QVector<vertex>& GetVertices() const;
-    const QVector<edge>& GetEdges() const;
-    const QVector<triangle>& GetTriangles() const;
+    QVector<vertex>& GetVertices();
+    QVector<edge>& GetEdges();
+    QVector<triangle>& GetTriangles();
 
 protected:
     void initializeGL(); //called once before drawing happens
