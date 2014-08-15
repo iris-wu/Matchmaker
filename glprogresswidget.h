@@ -4,6 +4,7 @@
 #include <QGLWidget>
 #include <QVector>
 #include "mathalgorithms.h"
+#include "glmeshselectwidget.h"
 
 class glProgressWidget : public QGLWidget
 {
@@ -13,6 +14,12 @@ class glProgressWidget : public QGLWidget
         MathAlgorithms::Vertex vertexInTexture;
     };
 
+    struct edgeWalker
+    {
+        glMeshSelectWidget::vertex* startVertex;
+        glMeshSelectWidget::vertex* targetVertex;
+        QVector<glMeshSelectWidget::edge*> edgesIWalked;
+    };
 
 public:
     glProgressWidget();
@@ -29,7 +36,11 @@ protected:
     void paintGL(); //called during draw call back
     void resizeGL(int width, int height); //called when widget size changes
     void mousePressEvent(QMouseEvent *event); //when mouse is pressed inside the area
+    void walkToVertex(edgeWalker* walker);
     QVector<ConstraintMatch> ConstraintMatches;
+    QVector<glMeshSelectWidget::vertex*>* meshVertices;
+    QVector<glMeshSelectWidget::edge*>* meshEdges;
+    QVector<glMeshSelectWidget::triangle*>* meshTriangles;
 };
 
 #endif // GLPROGRESSWIDGET_H

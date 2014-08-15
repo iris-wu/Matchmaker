@@ -456,3 +456,41 @@ void glTextureSelectWidget::buildStructers()
         matchVertexC->triangleIndicies.append(triangulatedTriangles.size() - 1);
     }
 }
+
+ QVector<MathAlgorithms::Vertex> glTextureSelectWidget::createBorderConstraints()
+ {
+     QVector<MathAlgorithms::Vertex> points;
+
+     //add default border constraint points, calculate again to avoid roundoff error
+     //Bottom
+     MathAlgorithms::Vertex vertex;
+     vertex.x = 0; vertex.y = 0; vertex.z = 0;
+     points.append(vertex);
+     vertex.x = GL_TEXTUREWIDGET_CANVAS_WIDTH / 3; vertex.y = 0; vertex.z = 0;
+     points.append(MathAlgorithms::Vertex(vertex));
+     vertex.x = (2 * GL_TEXTUREWIDGET_CANVAS_WIDTH) / 3; vertex.y = 0; vertex.z = 0;
+     points.append(MathAlgorithms::Vertex(vertex));
+     vertex.x = GL_TEXTUREWIDGET_CANVAS_WIDTH; vertex.y = 0; vertex.z = 0;
+     points.append(MathAlgorithms::Vertex(vertex));
+     //Top
+     vertex.x = 0; vertex.y = GL_TEXTUREWIDGET_CANVAS_HEIGHT; vertex.z = 0;
+     points.append(MathAlgorithms::Vertex(vertex));
+     vertex.x = GL_TEXTUREWIDGET_CANVAS_WIDTH / 3; vertex.y = GL_TEXTUREWIDGET_CANVAS_HEIGHT; vertex.z = 0;
+     points.append(MathAlgorithms::Vertex(vertex));
+     vertex.x = (2 * GL_TEXTUREWIDGET_CANVAS_WIDTH) / 3; vertex.y = GL_TEXTUREWIDGET_CANVAS_HEIGHT; vertex.z = 0;
+     points.append(MathAlgorithms::Vertex(vertex));
+     vertex.x = GL_TEXTUREWIDGET_CANVAS_WIDTH; vertex.y = GL_TEXTUREWIDGET_CANVAS_HEIGHT; vertex.z = 0;
+     points.append(MathAlgorithms::Vertex(vertex));
+     //Left
+     vertex.x = 0; vertex.y = GL_TEXTUREWIDGET_CANVAS_HEIGHT / 3; vertex.z = 0;
+     points.append(MathAlgorithms::Vertex(vertex));
+     vertex.x = 0; vertex.y = (2 * GL_TEXTUREWIDGET_CANVAS_HEIGHT) / 3; vertex.z = 0;
+     points.append(MathAlgorithms::Vertex(vertex));
+     //Right
+     vertex.x = GL_TEXTUREWIDGET_CANVAS_WIDTH; vertex.y = GL_TEXTUREWIDGET_CANVAS_HEIGHT / 3; vertex.z = 0;
+     points.append(MathAlgorithms::Vertex(vertex));
+     vertex.x = GL_TEXTUREWIDGET_CANVAS_WIDTH; vertex.y = (2 * GL_TEXTUREWIDGET_CANVAS_HEIGHT) / 3; vertex.z = 0;
+     points.append(MathAlgorithms::Vertex(vertex));
+
+     return points;
+ }

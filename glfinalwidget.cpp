@@ -52,7 +52,7 @@ void glFinalWidget::paintGL()
     glBegin(GL_TRIANGLES);
     for (int i = 0; i < m_constriants.size(); ++i)
     {
-        glMeshSelectWidget::triangle t = m_constriants[cIndex];
+        glMeshSelectWidget::triangle t = m_constriants[i];
         glMeshSelectWidget::vertex a, b, c;
         a = *(t.vertexA);
         b = *(t.vertexB);

@@ -8,6 +8,7 @@
 #include <map>
 #include <set>
 #include <vector>
+#include "mathalgorithms.h"
 
 #define GL_MESHWIDGET_CANVAS_WIDTH 150
 #define GL_MESHWIDGET_CANVAS_HEIGHT 150
@@ -59,10 +60,11 @@ public:
     // called when the user wants to parameterize mesh
     void parameterizeMesh();
     void SetEnableConstraint(bool aValue);
+    QVector<MathAlgorithms::Vertex> createBorderConstraints();
 
-    QVector<vertex*>& GetVertices();
-    QVector<edge*>& GetEdges();
-    QVector<triangle*>& GetTriangles();
+    QVector<vertex*>* GetVertices();
+    QVector<edge*>* GetEdges();
+    QVector<triangle*>* GetTriangles();
 
 protected:
     void initializeGL(); //called once before drawing happens

@@ -220,22 +220,22 @@ void glMeshSelectWidget::DrawObject()
 void glMeshSelectWidget::CreateBorder()
 {
     //Setup border constraints
-    //Left side
-    m_borderPoints.push_back(CreateContraintPoint(0, 0));
-    m_borderPoints.push_back(CreateContraintPoint(0, m_widgetHeight / 3));
-    m_borderPoints.push_back(CreateContraintPoint(0, (2 * m_widgetHeight) / 3));
+    //Bottom side
     m_borderPoints.push_back(CreateContraintPoint(0, m_widgetHeight));
+    m_borderPoints.push_back(CreateContraintPoint(m_widgetWidth / 3, m_widgetHeight));
+    m_borderPoints.push_back(CreateContraintPoint((2 * m_widgetWidth) / 3, m_widgetHeight));
+    m_borderPoints.push_back(CreateContraintPoint(m_widgetWidth, m_widgetHeight));
     //Top side
+    m_borderPoints.push_back(CreateContraintPoint(0, 0));
     m_borderPoints.push_back(CreateContraintPoint(m_widgetWidth / 3, 0));
     m_borderPoints.push_back(CreateContraintPoint((2 * m_widgetWidth) / 3, 0));
     m_borderPoints.push_back(CreateContraintPoint(m_widgetWidth, 0));
+    //Left side
+    m_borderPoints.push_back(CreateContraintPoint(0, m_widgetHeight / 3));
+    m_borderPoints.push_back(CreateContraintPoint(0, (2 * m_widgetHeight) / 3));
     //Right side
     m_borderPoints.push_back(CreateContraintPoint(m_widgetWidth, m_widgetHeight / 3));
     m_borderPoints.push_back(CreateContraintPoint(m_widgetWidth, (2 * m_widgetHeight) / 3));
-    m_borderPoints.push_back(CreateContraintPoint(m_widgetWidth, m_widgetHeight));
-    //Bottom side
-    m_borderPoints.push_back(CreateContraintPoint(m_widgetWidth / 3, m_widgetHeight));
-    m_borderPoints.push_back(CreateContraintPoint((2 * m_widgetWidth) / 3, m_widgetHeight));
 }
 
 glMeshSelectWidget::constraintPoint glMeshSelectWidget::CreateContraintPoint(int x, int y)
@@ -602,22 +602,44 @@ void glMeshSelectWidget::MakeNewStructure()
     AddEdgesAndTriangles();
 }
 
-QVector<glMeshSelectWidget::vertex*>& glMeshSelectWidget::GetVertices()
+QVector<glMeshSelectWidget::vertex*>* glMeshSelectWidget::GetVertices()
 {
-    return m_qVertices;
+    return &m_qVertices;
 }
 
-QVector<glMeshSelectWidget::edge*>& glMeshSelectWidget::GetEdges()
+QVector<glMeshSelectWidget::edge*>* glMeshSelectWidget::GetEdges()
 {
-    return m_qEdges;
+    return &m_qEdges;
 }
 
-QVector<glMeshSelectWidget::triangle*>& glMeshSelectWidget::GetTriangles()
+QVector<glMeshSelectWidget::triangle*>* glMeshSelectWidget::GetTriangles()
 {
-    return m_qTriangles;
+    return &m_qTriangles;
 }
 
 void glMeshSelectWidget::SetEnableConstraint(bool aValue)
 {
    enableSetConstraint = aValue;
+}
+
+QVector<MathAlgorithms::Vertex> glMeshSelectWidget::createBorderConstraints()
+{
+    QVector<MathAlgorithms::Vertex> fixedPoints;
+
+    for ( int i = 0; i < m_borderPoints.size(); ++i )
+    {
+        // add new boundary points to the set
+        std::vector<GLfloat> newPoint(3);
+        newPoint[0] = m_borderPoints[i].leftBottom.x + GL_MESHWIDGET_CONSTRAINT_SIZE;
+        newPoint[1] = m_borderPoints[i].leftBottom.y + GL_MESHWIDGET_CONSTRAINT_SIZE;
+        newPoint[2] = 0.0;
+
+        MathAlgorithms::Vertex vertex;
+        vertex.x = newPoint[0];
+        vertex.y = newPoint[1];
+        vertex.z = newPoint[2];
+        fixedPoints.push_back(vertex);
+    }
+
+    return fixedPoints;
 }

@@ -58,6 +58,7 @@ public:
     void loadTextureFromFile(QString& fileName);
     void triangulatePoints();
     void SetEnableConstraint(bool aValue);
+    QVector<MathAlgorithms::Vertex> createBorderConstraints();
 
 
     QVector<glMeshSelectWidget::vertex*>& GetVertices();
