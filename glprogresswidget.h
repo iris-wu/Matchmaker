@@ -5,6 +5,7 @@
 #include <QVector>
 #include "mathalgorithms.h"
 #include "glmeshselectwidget.h"
+#define GL_PROGRESSWIDGET_CONSTRAINT_SIZE 2
 
 class glProgressWidget : public QGLWidget
 {
@@ -41,6 +42,7 @@ protected:
     QVector<glMeshSelectWidget::vertex*>* meshVertices;
     QVector<glMeshSelectWidget::edge*>* meshEdges;
     QVector<glMeshSelectWidget::triangle*>* meshTriangles;
+    QVector<edgeWalker*> constraintEdgesWithPoints;
 };
 
 #endif // GLPROGRESSWIDGET_H

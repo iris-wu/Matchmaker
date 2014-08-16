@@ -7,7 +7,9 @@
 
 glProgressWidget::glProgressWidget()
 {
-
+    meshVertices = 0;
+    meshEdges = 0;
+    meshTriangles = 0;
 }
 
 glProgressWidget::~glProgressWidget()
@@ -18,15 +20,99 @@ glProgressWidget::~glProgressWidget()
 
 void glProgressWidget::initializeGL()
 {
-    //setup OpenGl
-    //glEnable(GL_TEXTURE_2D); //enable textures
-    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-
+    glClearColor( 1.0f, 1.0f, 1.0f, 1.0f );
 }
 
 void glProgressWidget::paintGL()
 {
-    //glClear(GL_COLOR_BUFFER_BIT);
+    glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+
+    //glShadeModel( GL_FLAT );
+    glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
+
+    if(meshTriangles)
+    {
+        //draw mesh
+        glColor3f(0.0f, 1.0f, 0.0f);
+
+        for(int i = 0; i < meshTriangles->size(); i++)
+        {
+            glMeshSelectWidget::triangle* triangle = meshTriangles->value(i);
+
+            //draw triangle mesh
+            glBegin( GL_TRIANGLES );
+
+            //set vertex
+            glVertex3f(triangle->vertexA->x, triangle->vertexA->y, triangle->vertexA->z);
+            glVertex3f(triangle->vertexB->x, triangle->vertexB->y, triangle->vertexB->z);
+            glVertex3f(triangle->vertexC->x, triangle->vertexC->y, triangle->vertexC->z);
+
+            glEnd();
+        }
+
+        //draw edges that connect constraints
+        glColor3f(0.5, 0, 0.5); //purple
+
+        for(int i = 0; i < constraintEdgesWithPoints.size(); i++)
+        {
+            edgeWalker* constraintWithEdges = constraintEdgesWithPoints[i];
+
+            //draw edges
+            for(int ii = 0; ii < constraintWithEdges->edgesIWalked.size(); ii++)
+            {
+                glMeshSelectWidget::vertex* vertexA = constraintWithEdges->edgesIWalked[ii]->vertexA;
+                glMeshSelectWidget::vertex* vertexB = constraintWithEdges->edgesIWalked[ii]->vertexB;
+
+                //draw line for edge
+                glBegin( GL_LINES );
+
+                //set vertex
+                glVertex3f(vertexA->x, vertexA->y, vertexA->z);
+                glVertex3f(vertexB->x, vertexB->y, vertexB->z);
+
+                glEnd();
+            }
+
+            //draw Constraint Points as well
+            glPolygonMode( GL_FRONT_AND_BACK, GL_FILL ); //constraint points should be filled
+
+            MathAlgorithms::Vertex bottomLeftA, bottomRightA, topRightA, topLeftA;
+            bottomLeftA.x = constraintWithEdges->startVertex->x - GL_PROGRESSWIDGET_CONSTRAINT_SIZE;
+            bottomLeftA.y = constraintWithEdges->startVertex->y - GL_PROGRESSWIDGET_CONSTRAINT_SIZE;
+            bottomRightA.x = constraintWithEdges->startVertex->x + GL_PROGRESSWIDGET_CONSTRAINT_SIZE;
+            bottomRightA.y = constraintWithEdges->startVertex->y - GL_PROGRESSWIDGET_CONSTRAINT_SIZE;
+            topRightA.x = constraintWithEdges->startVertex->x + GL_PROGRESSWIDGET_CONSTRAINT_SIZE;
+            topRightA.y = constraintWithEdges->startVertex->y + GL_PROGRESSWIDGET_CONSTRAINT_SIZE;
+            topLeftA.x = constraintWithEdges->startVertex->x - GL_PROGRESSWIDGET_CONSTRAINT_SIZE;
+            topLeftA.y = constraintWithEdges->startVertex->y + GL_PROGRESSWIDGET_CONSTRAINT_SIZE;
+
+            MathAlgorithms::Vertex bottomLeftB, bottomRightB, topRightB, topLeftB;
+            bottomLeftB.x = constraintWithEdges->targetVertex->x - GL_PROGRESSWIDGET_CONSTRAINT_SIZE;
+            bottomLeftB.y = constraintWithEdges->targetVertex->y - GL_PROGRESSWIDGET_CONSTRAINT_SIZE;
+            bottomRightB.x = constraintWithEdges->targetVertex->x + GL_PROGRESSWIDGET_CONSTRAINT_SIZE;
+            bottomRightB.y = constraintWithEdges->targetVertex->y - GL_PROGRESSWIDGET_CONSTRAINT_SIZE;
+            topRightB.x = constraintWithEdges->targetVertex->x + GL_PROGRESSWIDGET_CONSTRAINT_SIZE;
+            topRightB.y = constraintWithEdges->targetVertex->y + GL_PROGRESSWIDGET_CONSTRAINT_SIZE;
+            topLeftB.x = constraintWithEdges->targetVertex->x - GL_PROGRESSWIDGET_CONSTRAINT_SIZE;
+            topLeftB.y = constraintWithEdges->targetVertex->y + GL_PROGRESSWIDGET_CONSTRAINT_SIZE;
+
+            //start Vertext Constraint
+            glBegin( GL_TRIANGLE_STRIP );
+            glVertex2f(bottomRightA.x, bottomRightA.y);
+            glVertex2f(topRightA.x, topRightA.y);
+            glVertex2f(bottomLeftA.x, bottomLeftA.y);
+            glVertex2f(topLeftA.x, topLeftA.y);
+            glEnd();
+
+            //target Vertext Constraint
+            glBegin( GL_TRIANGLE_STRIP );
+            glVertex2f(bottomRightB.x, bottomRightB.y);
+            glVertex2f(topRightB.x, topRightB.y);
+            glVertex2f(bottomLeftB.x, bottomLeftB.y);
+            glVertex2f(topLeftB.x, topLeftB.y);
+            glEnd();
+        }
+    }
 }
 
 void glProgressWidget::resizeGL(int width, int height)
@@ -35,7 +121,7 @@ void glProgressWidget::resizeGL(int width, int height)
 
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    glOrtho(0, 100, 0, 100, -10, 10);
+    glOrtho(-75, 75, 0, 150, -90, 160);
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
 }
@@ -74,6 +160,7 @@ void glProgressWidget::performMatch()
     QVector<MathAlgorithms::Vertex> textureBorder = MainWindow::globalInstance->glTextureWidget->createBorderConstraints();
     QVector<MathAlgorithms::Vertex> meshBorder = MainWindow::globalInstance->glMeshWidget->createBorderConstraints();
 
+    //create match for border constraints between texture and mesh view
     for(int i = 0; i < 12 ; i++)
     {
         glProgressWidget::ConstraintMatch newMatch;
@@ -81,6 +168,14 @@ void glProgressWidget::performMatch()
         newMatch.vertexInTexture= textureBorder[i];
         ConstraintMatches.append(newMatch);
     }
+
+    //reset what edges are part of the constraints
+    for(int i = 0; i < constraintEdgesWithPoints.size(); i++)
+    {
+        constraintEdgesWithPoints[i]->edgesIWalked.clear();
+        delete constraintEdgesWithPoints[i]; //clear up memory it points to
+    }
+    constraintEdgesWithPoints.clear(); //clear up memoy taken by pointers
 
     //need to get edges, vertices and triangles from Mesh
     meshVertices = MainWindow::globalInstance->glMeshWidget->GetVertices();
@@ -181,71 +276,125 @@ void glProgressWidget::performMatch()
         walkerAToC->startVertex = meshVerticesA;
         walkerAToC->targetVertex = meshVerticesC;
         walkToVertex(walkerAToC);//find closest path
-        break;
+
+        //add constraint constraint information
+        walkerAToB->startVertex = meshVerticesA; //need to reset it, since it changes due to function calls
+        constraintEdgesWithPoints.append(walkerAToB);
+        walkerBToC->startVertex = meshVerticesB; //need to reset it, since it changes due to function calls
+        constraintEdgesWithPoints.append(walkerBToC);
+        walkerAToC->startVertex = meshVerticesA; //need to reset it, since it changes due to function calls
+        constraintEdgesWithPoints.append(walkerAToC);
+        //break;
     }
+
+    //redraw glWidget
+    updateGL();
 }
 
 void glProgressWidget::walkToVertex(edgeWalker* walker)
 {
-    QVector<int>* distances = new QVector<int>;
+    QVector<float> distances;
 
     for(int i = 0; i < walker->startVertex->edgeIndicies.size(); i++)
     {
          glMeshSelectWidget::edge* currentEdge = meshEdges->value(walker->startVertex->edgeIndicies[i]);
+         glMeshSelectWidget::vertex* goToVertex = 0;
+
          if(currentEdge->vertexA == walker->startVertex)
          {
-             //vertex B is destination?
-             if(currentEdge->vertexB == walker->targetVertex)
-             {
-                 //found destination, add edge and terminate
-                 walker->edgesIWalked.append(currentEdge);
-                 return;
-             }
-             else
-             {
-                 MathAlgorithms::Vertex distance;
-                 distance.x = walker->targetVertex->x - currentEdge->vertexB->x;
-                 distance.y = walker->targetVertex->y - currentEdge->vertexB->y;
-                 int dist = sqrt((distance.x * distance.x) +  (distance.y * distance.y));
-
-                 distances->append(dist);
-             }
+            goToVertex = currentEdge->vertexB;
          }
          else
          {
-             //vertex A is destination?
-             if(currentEdge->vertexA == walker->targetVertex)
-             {
-                 //found destination, add edge and terminate
-                 walker->edgesIWalked.append(currentEdge);
-                 return;
-             }
-             else
-             {
-                 MathAlgorithms::Vertex distance;
-                 distance.x = walker->targetVertex->x - currentEdge->vertexA->x;
-                 distance.y = walker->targetVertex->y - currentEdge->vertexA->y;
-                 int dist = sqrt((distance.x * distance.x) +  (distance.y * distance.y));
+            goToVertex = currentEdge->vertexA;
+         }
 
-                 distances->append(dist);
-             }
+         //vertex is destination?
+         if(goToVertex == walker->targetVertex)
+         {
+             //found destination, add edge and terminate
+             walker->edgesIWalked.append(currentEdge);
+             return;
+         }
+         else
+         {
+             MathAlgorithms::Vertex distance;
+             distance.x = walker->targetVertex->x - goToVertex->x;
+             distance.y = walker->targetVertex->y - goToVertex->y;
+             float dist = sqrt((distance.x * distance.x) +  (distance.y * distance.y));
+
+             distances.append(dist);
          }
     }
 
-    int shortestDisance = -1;
+    float shortestDisance = -1;
     int index = -1;
-    for(int i = 0; i < distances->size(); i++)
+    for(int i = 0; i < distances.size(); i++)
     {
-        if(distances->value(i) < shortestDisance || shortestDisance == -1)
+        if(distances[i] < shortestDisance || shortestDisance == -1)
         {
-            shortestDisance = distances->value(i);
-            index = i;
+            bool notGoodEdge = false;
+            for(int ii = 0; ii < walker->edgesIWalked.count(); ii++)
+            {
+                if(walker->edgesIWalked[ii] == meshEdges->value(walker->startVertex->edgeIndicies[i]))
+                {
+                    //already walked edge
+                    notGoodEdge = true;
+                    break;
+                }
+            }
+
+            if(!notGoodEdge)
+            {
+                //also need to check if edge leads into deadend
+                glMeshSelectWidget::edge* candidateEdge = meshEdges->value(walker->startVertex->edgeIndicies[i]);
+                glMeshSelectWidget::vertex* goToVertex = 0;
+
+                if(candidateEdge->vertexA == walker->startVertex)
+                {
+                   goToVertex = candidateEdge->vertexB;
+                }
+                else
+                {
+                   goToVertex = candidateEdge->vertexA;
+                }
+
+                for(int ii = 0; ii < walker->edgesIWalked.count(); ii++)
+                {
+                    bool hasNoneWalkedEdge = true;
+                    notGoodEdge = true;
+
+                    for(int iii = 0; iii < goToVertex->edgeIndicies.count(); iii++)
+                    {
+                        if(walker->edgesIWalked[ii] == meshEdges->value(goToVertex->edgeIndicies[iii]))
+                        {
+                            hasNoneWalkedEdge = false;
+                        }
+                    }
+
+                    if(hasNoneWalkedEdge)
+                    {
+                        //can use this destination
+                        notGoodEdge = false;
+                        break;
+                    }
+                }
+            }
+
+            if(!notGoodEdge)
+            {
+                shortestDisance = distances[i];
+                index = i;
+            }
         }
     }
 
+    if(index == -1)
+        return;
+
     glMeshSelectWidget::edge* bestEdge = meshEdges->value(walker->startVertex->edgeIndicies[index]);
     walker->edgesIWalked.append(bestEdge);
-    if(bestEdge->vertexA == walker->targetVertex)
+    if(bestEdge->vertexA == walker->startVertex)
     {
         walker->startVertex = bestEdge->vertexB;
         walkToVertex(walker);

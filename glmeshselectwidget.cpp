@@ -127,9 +127,9 @@ void glMeshSelectWidget::mousePressEvent(QMouseEvent *event)
         m_userConstraints.push_back(newPoint);
 
         MathAlgorithms::Vertex constraintVertex;
-        constraintVertex.x = vXLocation;
-        constraintVertex.y = vYLocation;
-        constraintVertex.z = 0;
+        constraintVertex.x = closestVertex[0];
+        constraintVertex.y = closestVertex[1];
+        constraintVertex.z = closestVertex[2];
 
         MainWindow::globalInstance->progressWidget->addConstraintMatchAddVertexInMesh(constraintVertex);
     }
@@ -231,11 +231,11 @@ void glMeshSelectWidget::CreateBorder()
     m_borderPoints.push_back(CreateContraintPoint((2 * m_widgetWidth) / 3, 0));
     m_borderPoints.push_back(CreateContraintPoint(m_widgetWidth, 0));
     //Left side
-    m_borderPoints.push_back(CreateContraintPoint(0, m_widgetHeight / 3));
     m_borderPoints.push_back(CreateContraintPoint(0, (2 * m_widgetHeight) / 3));
+    m_borderPoints.push_back(CreateContraintPoint(0, m_widgetHeight / 3));
     //Right side
-    m_borderPoints.push_back(CreateContraintPoint(m_widgetWidth, m_widgetHeight / 3));
     m_borderPoints.push_back(CreateContraintPoint(m_widgetWidth, (2 * m_widgetHeight) / 3));
+    m_borderPoints.push_back(CreateContraintPoint(m_widgetWidth, m_widgetHeight / 3));
 }
 
 glMeshSelectWidget::constraintPoint glMeshSelectWidget::CreateContraintPoint(int x, int y)
