@@ -99,6 +99,7 @@ MainWindow::MainWindow()
     actionMenu->addAction(meshParameterizationAction);
     actionMenu->addAction(triangulateTextureAction);
     actionMenu->addAction(matchAction);
+    actionMenu->addAction(embedAction);
 
     //set title and size of window
     setWindowTitle(tr(WINDOW_TITLE));
@@ -177,10 +178,11 @@ void MainWindow::SLOT_Match()
     //do matching
     progressWidget->makeCurrent();
     progressWidget->performMatch();
+    embedAction->setEnabled(true);
 }
 
 void MainWindow::SLOT_Embed()
 {
-    finalWidget->makeCurrent();
-    finalWidget->performEmbed();
+    progressWidget->makeCurrent();
+    progressWidget->performEmbed();
 }

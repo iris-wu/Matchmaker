@@ -17,15 +17,36 @@ class glProgressWidget : public QGLWidget
 
     struct edgeWalker
     {
+        bool success;
         glMeshSelectWidget::vertex* startVertex;
         glMeshSelectWidget::vertex* targetVertex;
         QVector<glMeshSelectWidget::edge*> edgesIWalked;
+    };
+
+    struct validateTriangulation
+    {
+        edgeWalker* edgeA;
+        edgeWalker* edgeB;
+        edgeWalker* edgeC;
+    };
+
+    struct constraintOrientation
+    {
+        MathAlgorithms::Vertex constraintVertex;
+        float sign;
+    };
+
+    struct constraintOrientationSet
+    {
+        glMeshSelectWidget::vertex* startConstraint;
+        QVector<constraintOrientation> constraintOrientations;
     };
 
 public:
     glProgressWidget();
     ~glProgressWidget();
     void performMatch();
+    void performEmbed();
 
     void addConstraintMatchAddVertexInMesh(MathAlgorithms::Vertex aVertex);
     void addConstraintMatchAddVertexInTexture(MathAlgorithms::Vertex aVertex);
@@ -37,12 +58,18 @@ protected:
     void paintGL(); //called during draw call back
     void resizeGL(int width, int height); //called when widget size changes
     void mousePressEvent(QMouseEvent *event); //when mouse is pressed inside the area
-    void walkToVertex(edgeWalker* walker);
+    void walkToVertex(edgeWalker* walker, constraintOrientationSet& constraintOrientations);
+    bool constraintEdgeDoesExist(glMeshSelectWidget::vertex* vertexA, glMeshSelectWidget::vertex* vertexB);
+    constraintOrientationSet createConstraintOrientationSet(glMeshSelectWidget::vertex* vertexA, glMeshSelectWidget::vertex* vertexB);
+    float crossProduct(MathAlgorithms::Vertex point1, glMeshSelectWidget::vertex* point2, glMeshSelectWidget::vertex* point3);
+
     QVector<ConstraintMatch> ConstraintMatches;
     QVector<glMeshSelectWidget::vertex*>* meshVertices;
     QVector<glMeshSelectWidget::edge*>* meshEdges;
     QVector<glMeshSelectWidget::triangle*>* meshTriangles;
     QVector<edgeWalker*> constraintEdgesWithPoints;
+    QVector<glMeshSelectWidget::vertex*> doNotWalkVertices;
+    QVector<validateTriangulation> validTriangulations;
 };
 
 #endif // GLPROGRESSWIDGET_H

@@ -260,38 +260,69 @@ void glProgressWidget::performMatch()
             }
         }
 
-        //now we know the vertex, we need to find shortest path between them in the mesh
-        //A --> B
-        edgeWalker* walkerAToB = new edgeWalker;
-        walkerAToB->startVertex = meshVerticesA;
-        walkerAToB->targetVertex = meshVerticesB;
-        walkToVertex(walkerAToB);//find closest path
-        //B --> C
-        edgeWalker* walkerBToC = new edgeWalker;
-        walkerBToC->startVertex = meshVerticesB;
-        walkerBToC->targetVertex = meshVerticesC;
-        walkToVertex(walkerBToC);//find closest path
-        //A --> C
-        edgeWalker* walkerAToC = new edgeWalker;
-        walkerAToC->startVertex = meshVerticesA;
-        walkerAToC->targetVertex = meshVerticesC;
-        walkToVertex(walkerAToC);//find closest path
+        edgeWalker* walkerAToB = 0;
+        edgeWalker* walkerBToC = 0;
+        edgeWalker* walkerAToC = 0;
 
-        //add constraint constraint information
-        walkerAToB->startVertex = meshVerticesA; //need to reset it, since it changes due to function calls
-        constraintEdgesWithPoints.append(walkerAToB);
-        walkerBToC->startVertex = meshVerticesB; //need to reset it, since it changes due to function calls
-        constraintEdgesWithPoints.append(walkerBToC);
-        walkerAToC->startVertex = meshVerticesA; //need to reset it, since it changes due to function calls
-        constraintEdgesWithPoints.append(walkerAToC);
-        //break;
+        //now we know the vertex, we need to find shortest path between them in the mesh
+        if(!constraintEdgeDoesExist(meshVerticesA, meshVerticesB))
+        {
+            //A --> B
+            walkerAToB = new edgeWalker;
+            walkerAToB->startVertex = meshVerticesA;
+            walkerAToB->targetVertex = meshVerticesB;
+            walkerAToB->success = false;
+            glProgressWidget::constraintOrientationSet set = createConstraintOrientationSet(meshVerticesB, meshVerticesA);
+            walkToVertex(walkerAToB, set);//find closest path
+            //done, add to constraint data-structer
+            walkerAToB->startVertex = meshVerticesA; //need to reset it, since it changes due to function calls
+            constraintEdgesWithPoints.append(walkerAToB);
+        }
+        if(!constraintEdgeDoesExist(meshVerticesB, meshVerticesC))
+        {
+            //B --> C
+            walkerBToC = new edgeWalker;
+            walkerBToC->startVertex = meshVerticesB;
+            walkerBToC->targetVertex = meshVerticesC;
+            walkerBToC->success = false;
+            glProgressWidget::constraintOrientationSet set = createConstraintOrientationSet(meshVerticesC, meshVerticesB);
+            walkToVertex(walkerBToC, set);//find closest path
+            //done, add to constraint data-structer
+            walkerBToC->startVertex = meshVerticesB; //need to reset it, since it changes due to function calls
+            constraintEdgesWithPoints.append(walkerBToC);
+        }
+        if(!constraintEdgeDoesExist(meshVerticesA, meshVerticesC))
+        {
+            //A --> C
+            walkerAToC = new edgeWalker;
+            walkerAToC->startVertex = meshVerticesA;
+            walkerAToC->targetVertex = meshVerticesC;
+            walkerAToC->success = false;
+            glProgressWidget::constraintOrientationSet set = createConstraintOrientationSet(meshVerticesC  , meshVerticesA);
+            walkToVertex(walkerAToC, set);//find closest path
+            //done, add to constraint data-structer
+            walkerAToC->startVertex = meshVerticesA; //need to reset it, since it changes due to function calls
+            constraintEdgesWithPoints.append(walkerAToC);
+        }
+
+        if ((walkerAToB && walkerAToB->success)
+        &&  (walkerBToC && walkerBToC->success)
+        &&  (walkerAToC && walkerAToC->success))
+        {
+          validateTriangulation properTriangulation;
+          properTriangulation.edgeA = walkerAToB;
+          properTriangulation.edgeB = walkerBToC;
+          properTriangulation.edgeC = walkerAToC;
+
+          validTriangulations.append(properTriangulation);
+        }
     }
 
     //redraw glWidget
     updateGL();
 }
 
-void glProgressWidget::walkToVertex(edgeWalker* walker)
+void glProgressWidget::walkToVertex(edgeWalker* walker, glProgressWidget::constraintOrientationSet& constraintOrientations)
 {
     QVector<float> distances;
 
@@ -314,6 +345,7 @@ void glProgressWidget::walkToVertex(edgeWalker* walker)
          {
              //found destination, add edge and terminate
              walker->edgesIWalked.append(currentEdge);
+             walker->success = true;
              return;
          }
          else
@@ -334,6 +366,20 @@ void glProgressWidget::walkToVertex(edgeWalker* walker)
         if(distances[i] < shortestDisance || shortestDisance == -1)
         {
             bool notGoodEdge = false;
+            glMeshSelectWidget::edge* candidateEdge = meshEdges->value(walker->startVertex->edgeIndicies[i]);
+            glMeshSelectWidget::vertex* goToVertex = 0;
+
+            //what vertex are we going to?
+            if(candidateEdge->vertexA == walker->startVertex)
+            {
+               goToVertex = candidateEdge->vertexB;
+            }
+            else
+            {
+               goToVertex = candidateEdge->vertexA;
+            }
+
+            //check if edge already used before
             for(int ii = 0; ii < walker->edgesIWalked.count(); ii++)
             {
                 if(walker->edgesIWalked[ii] == meshEdges->value(walker->startVertex->edgeIndicies[i]))
@@ -344,43 +390,40 @@ void glProgressWidget::walkToVertex(edgeWalker* walker)
                 }
             }
 
+            //check if vertex has already been used by another path
             if(!notGoodEdge)
             {
-                //also need to check if edge leads into deadend
-                glMeshSelectWidget::edge* candidateEdge = meshEdges->value(walker->startVertex->edgeIndicies[i]);
-                glMeshSelectWidget::vertex* goToVertex = 0;
-
-                if(candidateEdge->vertexA == walker->startVertex)
+                for(int vertexIndex = 0; vertexIndex < doNotWalkVertices.count(); vertexIndex++)
                 {
-                   goToVertex = candidateEdge->vertexB;
-                }
-                else
-                {
-                   goToVertex = candidateEdge->vertexA;
-                }
-
-                for(int ii = 0; ii < walker->edgesIWalked.count(); ii++)
-                {
-                    bool hasNoneWalkedEdge = true;
-                    notGoodEdge = true;
-
-                    for(int iii = 0; iii < goToVertex->edgeIndicies.count(); iii++)
+                    if(goToVertex == doNotWalkVertices[vertexIndex])
                     {
-                        if(walker->edgesIWalked[ii] == meshEdges->value(goToVertex->edgeIndicies[iii]))
-                        {
-                            hasNoneWalkedEdge = false;
-                        }
-                    }
-
-                    if(hasNoneWalkedEdge)
-                    {
-                        //can use this destination
-                        notGoodEdge = false;
+                        //someone already used this vertex
+                        notGoodEdge = true;
                         break;
                     }
                 }
             }
 
+            //check if we invalidate any of the constraint orientations
+            if(!notGoodEdge)
+            {
+                for(int indexConstraints = 0; indexConstraints < constraintOrientations.constraintOrientations.size(); indexConstraints++)
+                {
+                     glMeshSelectWidget::vertex* constraintVertexStart = constraintOrientations.startConstraint;
+                     glProgressWidget::constraintOrientation constraintOrient = constraintOrientations.constraintOrientations[indexConstraints];
+
+                    float sign = crossProduct(constraintOrient.constraintVertex, constraintVertexStart, goToVertex);
+                    if(sign > 0  && constraintOrient.sign < 0
+                    || (sign < 0 && constraintOrient.sign > 0)) //if signs do not agree
+                    {
+                        //does not work with one of the constraints
+                        notGoodEdge = true;
+                        break;
+                    }
+                }
+            }
+
+            //all good, this edge can be used
             if(!notGoodEdge)
             {
                 shortestDisance = distances[i];
@@ -397,11 +440,93 @@ void glProgressWidget::walkToVertex(edgeWalker* walker)
     if(bestEdge->vertexA == walker->startVertex)
     {
         walker->startVertex = bestEdge->vertexB;
-        walkToVertex(walker);
+        doNotWalkVertices.append(walker->startVertex); //since this vertex is part of our path, nobody else can use it
+        walkToVertex(walker, constraintOrientations);
     }
     else
     {
         walker->startVertex = bestEdge->vertexA;
-        walkToVertex(walker);
+        doNotWalkVertices.append(walker->startVertex); //since this vertex is part of our path, nobody else can use it
+        walkToVertex(walker, constraintOrientations);
+    }
+}
+
+bool glProgressWidget::constraintEdgeDoesExist(glMeshSelectWidget::vertex* vertexA, glMeshSelectWidget::vertex* vertexB)
+{
+    for(int i = 0; i < constraintEdgesWithPoints.size(); i++)
+    {
+        if((constraintEdgesWithPoints[i]->startVertex == vertexA && constraintEdgesWithPoints[i]->targetVertex == vertexB)
+        || (constraintEdgesWithPoints[i]->startVertex == vertexB && constraintEdgesWithPoints[i]->targetVertex == vertexA)) //might be switched around
+        {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+glProgressWidget::constraintOrientationSet glProgressWidget::createConstraintOrientationSet(glMeshSelectWidget::vertex* vertexA, glMeshSelectWidget::vertex* vertexB)
+{
+    constraintOrientationSet set;
+    set.startConstraint = vertexA; //always start from A
+
+    for(int i = 0; i < ConstraintMatches.size(); i++)
+    {
+        MathAlgorithms::Vertex constraintVertex = ConstraintMatches[i].vertexInMesh;
+
+        if(constraintVertex.x == vertexA->x && constraintVertex.y == vertexA->y
+        || constraintVertex.x == vertexB->x && constraintVertex.y == vertexB->y)
+        {
+            //constraint is one of the end points, don't add it
+        }
+        else
+        {
+            //calculate cross product from constraint to A times B
+            float sign = crossProduct(constraintVertex, vertexA, vertexB);
+
+            //this orientation is done
+            glProgressWidget::constraintOrientation orientation;
+            orientation.constraintVertex = constraintVertex;
+            orientation.sign = sign;
+            //add to set
+            set.constraintOrientations.append(orientation);
+        }
+    }
+
+    return set;
+}
+
+float glProgressWidget::crossProduct(MathAlgorithms::Vertex point1, glMeshSelectWidget::vertex* point2, glMeshSelectWidget::vertex* point3)
+{
+    MathAlgorithms::Vertex vectorA;
+    vectorA.x = point2->x - point1.x;
+    vectorA.y = point2->y - point1.y;
+    vectorA.z = point2->z - point1.z;
+
+    //normalize A
+    float normOfA = sqrt(vectorA.x * vectorA.x + vectorA.y * vectorA.y);
+    vectorA.x /= normOfA;
+    vectorA.y /= normOfA;
+
+    MathAlgorithms::Vertex vectorB;
+    vectorB.x = point3->x - point1.x;
+    vectorB.y = point3->y - point1.y;
+    vectorB.z = point3->z - point1.z;
+
+    //normalize B
+    float normOfB = sqrt(vectorB.x * vectorB.x + vectorB.y * vectorB.y);
+    vectorB.x /= normOfB;
+    vectorB.y /= normOfB;
+
+    //do cross product but only for the z component, since that is the only one we are interested in
+    float signOfCrossProduct = (vectorA.x * vectorB.y) - (vectorA.y * vectorB.x);
+    return signOfCrossProduct;
+}
+
+void glProgressWidget::performEmbed()
+{
+    for(int i = 0; i < validTriangulations.count(); i++)
+    {
+        validateTriangulation triangulation = validTriangulations[i];
     }
 }
