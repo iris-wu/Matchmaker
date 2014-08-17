@@ -173,7 +173,11 @@ void glFinalWidget::performEmbed()
     }
 
     EmbedForPatches();
-    RepositionInteriorPoints();
+
+    for (int i = 0; i < 10; ++i)
+    {
+        RepositionInteriorPoints();
+    }
 
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
@@ -246,6 +250,11 @@ void glFinalWidget::RepositionEdgePoints(glProgressWidget::edgeWalker* currentPa
         vertexToReposition->y = start->y + deltaY * (j + 1);
 
         startingPoint = vertexToReposition;
+
+        if (!HasThePoint(vertexToReposition))
+        {
+            m_fixedPoints.push_back(vertexToReposition);
+        }
     }
 }
 
@@ -313,13 +322,14 @@ void glFinalWidget::RepositionInteriorPoints()
                 QVector<glMeshSelectWidget::vertex*> neighbors;
                 for (int eIndex = 0; eIndex < currentVertex->edgeIndicies.size(); ++eIndex)
                 {
-                    if (m_qEdges->value(eIndex)->vertexA == currentVertex)
+                    int edgeIndex = currentVertex->edgeIndicies[eIndex];
+                    if (m_qEdges->value(edgeIndex)->vertexA == currentVertex)
                     {
-                        neighbors.push_back(m_qEdges->value(eIndex)->vertexB);
+                        neighbors.push_back(m_qEdges->value(edgeIndex)->vertexB);
                     }
-                    else
+                    else if (m_qEdges->value(edgeIndex)->vertexB == currentVertex)
                     {
-                        neighbors.push_back(m_qEdges->value(eIndex)->vertexA);
+                        neighbors.push_back(m_qEdges->value(edgeIndex)->vertexA);
                     }
                 }
 
@@ -344,7 +354,9 @@ void glFinalWidget::RepositionInteriorPoints()
                     sum.z = sum.z/(GLfloat)num;
 
                     // re-assign
-                    //*(*m_qVertices)[vIndex] = sum;
+                    currentVertex->x = sum.x;
+                    currentVertex->y = sum.y;
+                    currentVertex->z = sum.z;
                 }
                 break;
             }
