@@ -3,8 +3,10 @@
 
 #include <QGLWidget>
 #include <QVector>
+#include <QVector>
 #include "mathalgorithms.h"
 #include "glmeshselectwidget.h"
+#include "glprogresswidget.h"
 
 class glFinalWidget : public QGLWidget
 {
@@ -24,16 +26,21 @@ protected:
 
 private:
 
+    void EmbedForPatches();
+    void RepositionEdgePoints(glProgressWidget::edgeWalker* currentPath);
+    void RepositionInteriorPoints();
+
     GLfloat Sign(const glMeshSelectWidget::vertex& p1, const glMeshSelectWidget::vertex& p2, const glMeshSelectWidget::vertex& p3);
     bool PointInTriangle(const glMeshSelectWidget::vertex& pt, const glMeshSelectWidget::vertex& v1, const glMeshSelectWidget::vertex& v2, const glMeshSelectWidget::vertex& v3);
+    bool HasThePoint(const glMeshSelectWidget::vertex* v);
 
-    void Reposition();
+    QVector<glMeshSelectWidget::vertex*>* m_qVertices;
+    QVector<glMeshSelectWidget::edge*>* m_qEdges;
+    QVector<glMeshSelectWidget::triangle*>* m_qTriangles;
 
-    QVector<glMeshSelectWidget::vertex> m_qVertices;
-    QVector<glMeshSelectWidget::edge> m_qEdges;
-    QVector<glMeshSelectWidget::triangle> m_qTriangles;
+    QVector<glProgressWidget::validateTriangulation> m_validTriangulations;
 
-    QVector<glMeshSelectWidget::triangle> m_constriants;
+    QVector<glMeshSelectWidget::vertex*> m_fixedPoints;
 };
 
 #endif // GLFINALWIDGET_H

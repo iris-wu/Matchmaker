@@ -9,6 +9,8 @@
 
 class glProgressWidget : public QGLWidget
 {
+public:
+
     struct ConstraintMatch
     {
         MathAlgorithms::Vertex vertexInMesh;
@@ -42,14 +44,15 @@ class glProgressWidget : public QGLWidget
         QVector<constraintOrientation> constraintOrientations;
     };
 
-public:
     glProgressWidget();
     ~glProgressWidget();
     void performMatch();
-    void performEmbed();
+    //void performEmbed();
 
     void addConstraintMatchAddVertexInMesh(MathAlgorithms::Vertex aVertex);
     void addConstraintMatchAddVertexInTexture(MathAlgorithms::Vertex aVertex);
+
+    QVector<validateTriangulation> GetValidTriangulations();
 
 protected:
 

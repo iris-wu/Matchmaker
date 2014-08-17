@@ -523,10 +523,15 @@ float glProgressWidget::crossProduct(MathAlgorithms::Vertex point1, glMeshSelect
     return signOfCrossProduct;
 }
 
-void glProgressWidget::performEmbed()
+/*void glProgressWidget::performEmbed()
 {
     for(int i = 0; i < validTriangulations.count(); i++)
     {
         validateTriangulation triangulation = validTriangulations[i];
     }
+}*/
+
+QVector<glProgressWidget::validateTriangulation> glProgressWidget::GetValidTriangulations()
+{
+    return validTriangulations;
 }

@@ -183,6 +183,6 @@ void MainWindow::SLOT_Match()
 
 void MainWindow::SLOT_Embed()
 {
-    progressWidget->makeCurrent();
-    progressWidget->performEmbed();
+    finalWidget->makeCurrent();
+    finalWidget->performEmbed();
 }
