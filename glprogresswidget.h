@@ -5,7 +5,7 @@
 #include <QVector>
 #include "mathalgorithms.h"
 #include "glmeshselectwidget.h"
-#define GL_PROGRESSWIDGET_CONSTRAINT_SIZE 2
+#define GL_PROGRESSWIDGET_CONSTRAINT_SIZE 1
 
 class glProgressWidget : public QGLWidget
 {
@@ -62,7 +62,7 @@ protected:
     void resizeGL(int width, int height); //called when widget size changes
     void mousePressEvent(QMouseEvent *event); //when mouse is pressed inside the area
     void walkToVertex(edgeWalker* walker, constraintOrientationSet& constraintOrientations);
-    bool constraintEdgeDoesExist(glMeshSelectWidget::vertex* vertexA, glMeshSelectWidget::vertex* vertexB);
+    edgeWalker* constraintEdgeDoesExist(glMeshSelectWidget::vertex* vertexA, glMeshSelectWidget::vertex* vertexB);
     constraintOrientationSet createConstraintOrientationSet(glMeshSelectWidget::vertex* vertexA, glMeshSelectWidget::vertex* vertexB);
     float crossProduct(MathAlgorithms::Vertex point1, glMeshSelectWidget::vertex* point2, glMeshSelectWidget::vertex* point3);
 

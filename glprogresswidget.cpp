@@ -272,7 +272,7 @@ void glProgressWidget::performMatch()
             walkerAToB->startVertex = meshVerticesA;
             walkerAToB->targetVertex = meshVerticesB;
             walkerAToB->success = false;
-            glProgressWidget::constraintOrientationSet set = createConstraintOrientationSet(meshVerticesB, meshVerticesA);
+            glProgressWidget::constraintOrientationSet set = createConstraintOrientationSet(meshVerticesA , meshVerticesB);
             walkToVertex(walkerAToB, set);//find closest path
             //done, add to constraint data-structer
             walkerAToB->startVertex = meshVerticesA; //need to reset it, since it changes due to function calls
@@ -285,7 +285,7 @@ void glProgressWidget::performMatch()
             walkerBToC->startVertex = meshVerticesB;
             walkerBToC->targetVertex = meshVerticesC;
             walkerBToC->success = false;
-            glProgressWidget::constraintOrientationSet set = createConstraintOrientationSet(meshVerticesC, meshVerticesB);
+            glProgressWidget::constraintOrientationSet set = createConstraintOrientationSet(meshVerticesB , meshVerticesC);
             walkToVertex(walkerBToC, set);//find closest path
             //done, add to constraint data-structer
             walkerBToC->startVertex = meshVerticesB; //need to reset it, since it changes due to function calls
@@ -298,21 +298,21 @@ void glProgressWidget::performMatch()
             walkerAToC->startVertex = meshVerticesA;
             walkerAToC->targetVertex = meshVerticesC;
             walkerAToC->success = false;
-            glProgressWidget::constraintOrientationSet set = createConstraintOrientationSet(meshVerticesC  , meshVerticesA);
+            glProgressWidget::constraintOrientationSet set = createConstraintOrientationSet(meshVerticesA, meshVerticesC  );
             walkToVertex(walkerAToC, set);//find closest path
             //done, add to constraint data-structer
             walkerAToC->startVertex = meshVerticesA; //need to reset it, since it changes due to function calls
             constraintEdgesWithPoints.append(walkerAToC);
         }
 
-        if ((walkerAToB && walkerAToB->success)
-        &&  (walkerBToC && walkerBToC->success)
-        &&  (walkerAToC && walkerAToC->success))
+        if ((constraintEdgeDoesExist(meshVerticesA, meshVerticesB)->success)
+        &&  (constraintEdgeDoesExist(meshVerticesB, meshVerticesC)->success)
+        &&  (constraintEdgeDoesExist(meshVerticesA, meshVerticesC)->success))
         {
           validateTriangulation properTriangulation;
-          properTriangulation.edgeA = walkerAToB;
-          properTriangulation.edgeB = walkerBToC;
-          properTriangulation.edgeC = walkerAToC;
+          properTriangulation.edgeA = constraintEdgeDoesExist(meshVerticesA, meshVerticesB);
+          properTriangulation.edgeB = constraintEdgeDoesExist(meshVerticesB, meshVerticesC);
+          properTriangulation.edgeC = constraintEdgeDoesExist(meshVerticesA, meshVerticesC);
 
           validTriangulations.append(properTriangulation);
         }
@@ -409,12 +409,28 @@ void glProgressWidget::walkToVertex(edgeWalker* walker, glProgressWidget::constr
             {
                 for(int indexConstraints = 0; indexConstraints < constraintOrientations.constraintOrientations.size(); indexConstraints++)
                 {
-                     glMeshSelectWidget::vertex* constraintVertexStart = constraintOrientations.startConstraint;
+                     glMeshSelectWidget::vertex* constraintVertexStart =  walker->targetVertex;
                      glProgressWidget::constraintOrientation constraintOrient = constraintOrientations.constraintOrientations[indexConstraints];
 
-                    float sign = crossProduct(constraintOrient.constraintVertex, constraintVertexStart, goToVertex);
-                    if(sign > 0  && constraintOrient.sign < 0
+                    float sign = crossProduct(constraintOrient.constraintVertex, goToVertex, constraintVertexStart);
+                    if((sign > 0  && constraintOrient.sign < 0)
                     || (sign < 0 && constraintOrient.sign > 0)) //if signs do not agree
+                    {
+                        //does not work with one of the constraints
+                        notGoodEdge = true;
+                        break;
+                    }
+                }
+            }
+
+            //check if walks through a constraint point, it shouldn't unless it is destination
+            if(!notGoodEdge)
+            {
+                for(int indexConstraints = 0; indexConstraints < constraintOrientations.constraintOrientations.size(); indexConstraints++)
+                {
+                    glProgressWidget::constraintOrientation constraintOrient = constraintOrientations.constraintOrientations[indexConstraints];
+
+                    if(constraintOrient.constraintVertex.x == goToVertex->x && constraintOrient.constraintVertex.y == goToVertex->y)
                     {
                         //does not work with one of the constraints
                         notGoodEdge = true;
@@ -451,18 +467,18 @@ void glProgressWidget::walkToVertex(edgeWalker* walker, glProgressWidget::constr
     }
 }
 
-bool glProgressWidget::constraintEdgeDoesExist(glMeshSelectWidget::vertex* vertexA, glMeshSelectWidget::vertex* vertexB)
+glProgressWidget::edgeWalker* glProgressWidget::constraintEdgeDoesExist(glMeshSelectWidget::vertex* vertexA, glMeshSelectWidget::vertex* vertexB)
 {
     for(int i = 0; i < constraintEdgesWithPoints.size(); i++)
     {
         if((constraintEdgesWithPoints[i]->startVertex == vertexA && constraintEdgesWithPoints[i]->targetVertex == vertexB)
         || (constraintEdgesWithPoints[i]->startVertex == vertexB && constraintEdgesWithPoints[i]->targetVertex == vertexA)) //might be switched around
         {
-            return true;
+            return constraintEdgesWithPoints[i];
         }
     }
 
-    return false;
+    return 0;
 }
 
 glProgressWidget::constraintOrientationSet glProgressWidget::createConstraintOrientationSet(glMeshSelectWidget::vertex* vertexA, glMeshSelectWidget::vertex* vertexB)
@@ -474,8 +490,8 @@ glProgressWidget::constraintOrientationSet glProgressWidget::createConstraintOri
     {
         MathAlgorithms::Vertex constraintVertex = ConstraintMatches[i].vertexInMesh;
 
-        if(constraintVertex.x == vertexA->x && constraintVertex.y == vertexA->y
-        || constraintVertex.x == vertexB->x && constraintVertex.y == vertexB->y)
+        if((constraintVertex.x == vertexA->x && constraintVertex.y == vertexA->y)
+        || (constraintVertex.x == vertexB->x && constraintVertex.y == vertexB->y))
         {
             //constraint is one of the end points, don't add it
         }
@@ -498,28 +514,29 @@ glProgressWidget::constraintOrientationSet glProgressWidget::createConstraintOri
 
 float glProgressWidget::crossProduct(MathAlgorithms::Vertex point1, glMeshSelectWidget::vertex* point2, glMeshSelectWidget::vertex* point3)
 {
-    MathAlgorithms::Vertex vectorA;
-    vectorA.x = point2->x - point1.x;
-    vectorA.y = point2->y - point1.y;
-    vectorA.z = point2->z - point1.z;
+//    MathAlgorithms::Vertex vectorA;
+//    vectorA.x = point2->x - point1.x;
+//    vectorA.y = point2->y - point1.y;
+//    vectorA.z = point2->z - point1.z;
 
-    //normalize A
-    float normOfA = sqrt(vectorA.x * vectorA.x + vectorA.y * vectorA.y);
-    vectorA.x /= normOfA;
-    vectorA.y /= normOfA;
+//    //normalize A
+//    float normOfA = sqrt(vectorA.x * vectorA.x + vectorA.y * vectorA.y);
+//    vectorA.x /= normOfA;
+//    vectorA.y /= normOfA;
 
-    MathAlgorithms::Vertex vectorB;
-    vectorB.x = point3->x - point1.x;
-    vectorB.y = point3->y - point1.y;
-    vectorB.z = point3->z - point1.z;
+//    MathAlgorithms::Vertex vectorB;
+//    vectorB.x = point3->x - point2->x;
+//    vectorB.y = point3->y - point2->y;
+//    vectorB.z = point3->z - point2->z;
 
-    //normalize B
-    float normOfB = sqrt(vectorB.x * vectorB.x + vectorB.y * vectorB.y);
-    vectorB.x /= normOfB;
-    vectorB.y /= normOfB;
+//    //normalize B
+//    float normOfB = sqrt(vectorB.x * vectorB.x + vectorB.y * vectorB.y);
+//    vectorB.x /= normOfB;
+//    vectorB.y /= normOfB;
 
-    //do cross product but only for the z component, since that is the only one we are interested in
-    float signOfCrossProduct = (vectorA.x * vectorB.y) - (vectorA.y * vectorB.x);
+//    //do cross product but only for the z component, since that is the only one we are interested in
+//    float signOfCrossProduct = (vectorA.x * vectorB.y) - (vectorA.y * vectorB.x);
+    float signOfCrossProduct = (point2->x - point3->x)*(point1.y - point3->y) > (point2->y - point3->y)*(point1.x - point3->x);
     return signOfCrossProduct;
 }
 

@@ -171,22 +171,22 @@ void glTextureSelectWidget::loadTextureFromFile(QString& fileName)
     textureLoaded = true;
 
     //setup border constraints
-    //Left side
-    borderConstraints[0] = createContraintPoint(0, 0);
-    borderConstraints[1] = createContraintPoint(0, widgetHeight / 3);
-    borderConstraints[2] = createContraintPoint(0, (2 * widgetHeight) / 3);
-    borderConstraints[3] = createContraintPoint(0, widgetHeight);
-    //Top side
-    borderConstraints[4] = createContraintPoint(widgetWidth / 3, 0);
-    borderConstraints[5] = createContraintPoint((2 * widgetWidth) / 3, 0);
-    borderConstraints[6] = createContraintPoint(widgetWidth, 0);
-    //Right side
-    borderConstraints[7] = createContraintPoint(widgetWidth, widgetHeight / 3);
-    borderConstraints[8] = createContraintPoint(widgetWidth, (2 * widgetHeight) / 3);
-    borderConstraints[9] = createContraintPoint(widgetWidth, widgetHeight);
     //Bottom side
-    borderConstraints[10] = createContraintPoint(widgetWidth / 3, widgetHeight);
-    borderConstraints[11] = createContraintPoint((2 * widgetWidth) / 3, widgetHeight);
+    borderConstraints[0] = createContraintPoint(0, widgetHeight);
+    borderConstraints[1] = createContraintPoint(widgetWidth / 3, widgetHeight);
+    borderConstraints[2] = createContraintPoint((2 * widgetWidth) / 3, widgetHeight);
+    borderConstraints[3] = createContraintPoint(widgetWidth, widgetHeight);
+    //Top side
+    borderConstraints[4] = createContraintPoint(0, 0);
+    borderConstraints[5] = createContraintPoint(widgetWidth / 3, 0);
+    borderConstraints[6] = createContraintPoint((2 * widgetWidth) / 3, 0);
+    borderConstraints[7] = createContraintPoint(widgetWidth, 0);
+    //Left side
+    borderConstraints[8] = createContraintPoint(0, (2 * widgetHeight) / 3);
+    borderConstraints[9] = createContraintPoint(0, widgetHeight / 3);
+    //Right side
+    borderConstraints[10] = createContraintPoint(widgetWidth, (2 * widgetHeight) / 3);
+    borderConstraints[11] = createContraintPoint(widgetWidth, widgetHeight / 3);
 
     //redraw glWidget
     updateGL();
@@ -491,6 +491,15 @@ void glTextureSelectWidget::buildStructers()
      points.append(MathAlgorithms::Vertex(vertex));
      vertex.x = GL_TEXTUREWIDGET_CANVAS_WIDTH; vertex.y = (2 * GL_TEXTUREWIDGET_CANVAS_HEIGHT) / 3; vertex.z = 0;
      points.append(MathAlgorithms::Vertex(vertex));
+
+//     for ( int i = 0; i < 12; ++i )
+//     {
+//         MathAlgorithms::Vertex vertex;
+//         vertex.x =  borderConstraints[i].leftBottom.x + GL_TEXTUREWIDGET_CONSTRAINT_SIZE;
+//         vertex.y =  borderConstraints[i].leftBottom.y + GL_TEXTUREWIDGET_CONSTRAINT_SIZE;
+//         vertex.z = 0;
+//         points.push_back(vertex);
+//     }
 
      return points;
  }
