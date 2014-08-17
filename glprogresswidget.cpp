@@ -536,7 +536,8 @@ float glProgressWidget::crossProduct(MathAlgorithms::Vertex point1, glMeshSelect
 
 //    //do cross product but only for the z component, since that is the only one we are interested in
 //    float signOfCrossProduct = (vectorA.x * vectorB.y) - (vectorA.y * vectorB.x);
-    float signOfCrossProduct = (point2->x - point3->x)*(point1.y - point3->y) > (point2->y - point3->y)*(point1.x - point3->x);
+    //float signOfCrossProduct = (point2->x - point3->x)*(point1.y - point3->y) > (point2->y - point3->y)*(point1.x - point3->x);
+    float signOfCrossProduct = (point1.x - point3->x) * (point2->y - point3->y) > (point2->x - point3->x) * (point1.y - point3->y);
     return signOfCrossProduct;
 }
 
