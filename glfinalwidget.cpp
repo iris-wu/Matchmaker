@@ -89,7 +89,7 @@ void glFinalWidget::paintGL()
         glEnd();
 
         // draw border points
-        glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
+        /*glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
         for(int i = 0; i < m_fixedPoints.size(); ++i)
         {
             glBegin(GL_TRIANGLE_STRIP);
@@ -99,7 +99,7 @@ void glFinalWidget::paintGL()
             glVertex3f(v->x - 1, v->y - 1, v->z);
             glVertex3f(v->x - 1, v->y + 1, v->z);
             glEnd();
-        }
+        }*/
     }
 }
 

@@ -161,6 +161,7 @@ void MainWindow::SLOT_ParameterizeMesh()
 {
     glMeshWidget->makeCurrent();
     glMeshWidget->parameterizeMesh();
+    meshParameterizationAction->setEnabled(false);
 }
 
 void MainWindow::SLOT_TriangulateTexture()
